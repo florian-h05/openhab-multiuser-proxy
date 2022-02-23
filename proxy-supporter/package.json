@@ -3,28 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "prebuild": "rm -fr ./dist",
-    "build": "tsc",
-    "start": "node ./dist/app.js",
-    "dev": "ts-node-dev --respawn --pretty --transpile-only src/app.ts"
+    "start": "node ./src/app.js",
+    "dev": "nodemon /src/app.js",
+    "lint": "semistandard"
   },
   "dependencies": {
     "dotenv": "^16.0.0",
     "express": "~4.16.1",
     "helmet": "^5.0.2",
+    "node-fetch": "^3.2.0",
     "yargs": "^17.3.1"
   },
-  "devDependencies": {
-    "@types/express": "^4.17.13",
-    "@types/node": "^17.0.21",
-    "@types/yargs": "^17.0.8",
-    "ts-node-dev": "^1.1.8",
-    "ts-standard": "^11.0.0",
-    "typescript": "^4.5.5"
-  },
   "description": "Provides some logic for the openHAB multiuser proxy with NGINX.",
-  "main": "dist/app.js",
-  "types": "dist/app.d.ts",
+  "main": "src/app.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/florian-h05/openhab-multiuser-proxy.git"
@@ -39,5 +30,10 @@
   "bugs": {
     "url": "https://github.com/florian-h05/openhab-multiuser-proxy/issues"
   },
-  "homepage": "https://github.com/florian-h05/openhab-multiuser-proxy#readme"
+  "homepage": "https://github.com/florian-h05/openhab-multiuser-proxy#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "semistandard": "^16.0.1"
+  },
+  "type": "module"
 }
