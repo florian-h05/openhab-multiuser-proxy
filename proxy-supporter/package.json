@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "prebuild": "rm -fr ./dist",
     "build": "tsc",
-    "start": "npm run build && node ./dist/app.js",
-    "develop": "nodemon npm run start"
+    "start": "node ./dist/app.js",
+    "watch": "nodemon -e ts -w ./src src/app.ts"
   },
   "dependencies": {
     "express": "~4.16.1",
@@ -22,6 +23,7 @@
   },
   "description": "Provides some logic for the openHAB multiuser proxy with NGINX.",
   "main": "dist/app.js",
+  "types": "dist/app.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/florian-h05/openhab-multiuser-proxy.git"
@@ -36,6 +38,5 @@
   "bugs": {
     "url": "https://github.com/florian-h05/openhab-multiuser-proxy/issues"
   },
-  "homepage": "https://github.com/florian-h05/openhab-multiuser-proxy#readme",
-  "type": "module"
+  "homepage": "https://github.com/florian-h05/openhab-multiuser-proxy#readme"
 }
