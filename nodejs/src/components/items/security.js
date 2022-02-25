@@ -1,5 +1,5 @@
-import findKeyInObj from './../../utils.js';
-import sitemaps from './../sitemaps/backend.js';
+import findKeyInObj from '../../utils.js';
+import sitemaps from '../sitemaps/backend.js';
 
 /**
  * Items security namespace. Provides security checks for Item access.

@@ -1,6 +1,6 @@
 import security from './security.js';
-import { backendInfo } from './../../server.js';
-import { requireHeader } from './../middleware.js';
+import { backendInfo } from '../../server.js';
+import { requireHeader } from '../middleware.js';
 
 /**
  * Provide required /items routes.

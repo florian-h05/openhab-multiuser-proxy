@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import helmet from 'helmet';
 import swagger from './components/swagger.js';
-import routes from './routes.js';
+import routes from './components/routes.js';
 
 dotenv.config();
 

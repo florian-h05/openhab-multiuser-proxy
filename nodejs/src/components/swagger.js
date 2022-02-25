@@ -5,8 +5,8 @@ import * as swaggerUi from 'swagger-ui-express';
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'openHAB Multiuser Logic Server',
-    description: 'Providing logic to filter responses from the backend and to authorize requests.',
+    title: 'openHAB Multiuser Proxy',
+    description: 'Multi-User support for openHAB REST API with NGINX.',
     version: '1.0.0',
     license: {
       name: 'GNU GPL-3.0',

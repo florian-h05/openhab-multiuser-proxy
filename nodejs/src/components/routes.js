@@ -1,5 +1,5 @@
-import sitemaps from './components/sitemaps/routes.js';
-import items from './components/items/routes.js';
+import sitemaps from './sitemaps/routes.js';
+import items from './items/routes.js';
 
 /**
  * Routes namespace. Providing routes.

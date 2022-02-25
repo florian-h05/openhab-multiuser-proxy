@@ -36,7 +36,7 @@ build/Release
 dist/
 
 # Output of 'npm run docs' / JSDoc
-proxy-supporter/docs/
+nodejs/docs/
 
 # Dependency directories
 node_modules/

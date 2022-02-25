@@ -1,6 +1,6 @@
 import backend from './backend.js';
-import { backendInfo } from './../../server.js';
-import { requireHeader } from './../middleware.js';
+import { backendInfo } from '../../server.js';
+import { requireHeader } from '../middleware.js';
 
 /**
  * Provides required /sitemaps routes.

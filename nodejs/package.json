@@ -1,13 +1,15 @@
 {
-  "name": "openhab-multiuser-proxy-supporter",
-  "version": "0.0.0",
+  "name": "openhab-multiuser-proxy",
+  "description": "Multi-User support for openHAB REST API with NGINX.",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "node ./src/server.js",
     "dev": "nodemon ./src/server.js",
     "lint": "semistandard",
-    "predocs": "rm -Rf ./docs/*",
-    "docs": "./node_modules/.bin/jsdoc --configure docs_config.json && mv ./docs/$npm_package_name/$npm_package_version/* ./docs/ && rm -Rf ./docs/$npm_package_name/$npm_package_version"
+    "predocs": "rm -Rf ./docs/* && cp -rf ./../README.md .",
+    "docs": "./node_modules/.bin/jsdoc --configure docs_config.json && mv ./docs/$npm_package_name/$npm_package_version/* ./docs/ && rm -Rf ./docs/$npm_package_name/$npm_package_version",
+    "postdocs": "rm README.md"
   },
   "dependencies": {
     "dotenv": "^16.0.0",
@@ -18,7 +20,6 @@
     "swagger-ui-express": "^4.3.0",
     "yargs": "^17.3.1"
   },
-  "description": "Provides some logic for the openHAB multiuser proxy with NGINX.",
   "main": "src/server.js",
   "repository": {
     "type": "git",
@@ -27,7 +28,9 @@
   "keywords": [
     "openHAB",
     "NGINX",
-    "multiuser"
+    "REST",
+    "multi-user",
+    "smarthome"
   ],
   "author": "Florian Hotze",
   "license": "GPL-3.0",
