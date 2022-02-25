@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./src/app.js",
-    "dev": "nodemon ./src/app.js",
+    "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js",
     "lint": "semistandard"
   },
   "dependencies": {
@@ -17,7 +17,7 @@
     "yargs": "^17.3.1"
   },
   "description": "Provides some logic for the openHAB multiuser proxy with NGINX.",
-  "main": "src/app.js",
+  "main": "src/server.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/florian-h05/openhab-multiuser-proxy.git"

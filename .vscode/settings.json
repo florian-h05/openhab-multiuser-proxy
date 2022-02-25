@@ -1,5 +1,5 @@
 {
-    "standard.engine": "ts-standard",
+    "standard.engine": "semistandard",
     "standard.workingDirectories": [
         "./proxy-supporter"
     ],

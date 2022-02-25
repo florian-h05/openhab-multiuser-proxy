@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2021 Florian Hotze under MIT License
  */
-import sitemaps from './sitemaps.js';
+import sitemaps from './sitemaps/routes.js';
 
 export default (app, fetch, backend) => {
   /**
