@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node ./src/server.js",
     "dev": "nodemon ./src/server.js",
-    "lint": "semistandard"
+    "lint": "semistandard",
+    "predocs": "rm -Rf ./docs/*",
+    "docs": "./node_modules/.bin/jsdoc --configure docs_config.json && mv ./docs/$npm_package_name/$npm_package_version/* ./docs/ && rm -Rf ./docs/$npm_package_name/$npm_package_version"
   },
   "dependencies": {
     "dotenv": "^16.0.0",
@@ -34,6 +36,8 @@
   },
   "homepage": "https://github.com/florian-h05/openhab-multiuser-proxy#readme",
   "devDependencies": {
+    "docdash": "^1.2.0",
+    "jsdoc": "^3.6.10",
     "nodemon": "^2.0.15",
     "semistandard": "^16.0.1"
   },
