@@ -1,5 +1,19 @@
 import fetch from 'node-fetch';
 
+/**
+ * Sitemaps backend namespace. Providing access to the openHAB backend.
+ *
+ * @namespace sitemaps.backend
+ */
+
+/**
+ * Get all available Sitemaps.
+ *
+ * @memberof sitemaps.backend
+ * @private
+ * @param {String} HOST hostname of openHAB server
+ * @returns {Array[Object]} array of Sitemaps
+ */
 const getAll = async function (HOST) {
   try {
     const response = await fetch(HOST + '/rest/sitemaps');
@@ -12,7 +26,18 @@ const getAll = async function (HOST) {
   }
 };
 
+/**
+ * Get all available Sitemaps for a client.
+ *
+ * @memberof sitemaps.backend
+ * @param {String} HOST hostname of openHAB server
+ * @param {String} user username
+ * @param {Array[String]} org array of organisations the user is member
+ * @returns {Array[Object]} array of Sitemaps
+ */
 const getAllFiltered = async function (HOST, user, org) {
+  if (!user) throw Error('Paramater user is required.');
+  if (!org) org = [];
   try {
     const json = await getAll(HOST);
     const sitemaps = [];
@@ -27,6 +52,14 @@ const getAllFiltered = async function (HOST, user, org) {
   }
 };
 
+/**
+ * Get Sitemap by name.
+ *
+ * @memberof sitemaps.backend
+ * @param {String} HOST hostname of openHAB server
+ * @param {String} sitemapname Sitemap name
+ * @returns {Object} Sitemap
+ */
 const getSingle = async function (HOST, sitemapname) {
   try {
     const response = await fetch(HOST + '/rest/sitemaps/' + sitemapname);

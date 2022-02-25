@@ -12,7 +12,7 @@
  * @param {String} key key to find in the object
  * @returns {Array} array of the values of all occurences of key
  */
-export const findKeyInObj = (obj, key) => {
+const findKeyInObj = (obj, key) => {
   const values = [];
   const iterator = (obj, key) => {
     for (const i in obj) {
@@ -27,4 +27,8 @@ export const findKeyInObj = (obj, key) => {
   };
   iterator(obj, key);
   return values;
+};
+
+export default {
+  findKeyInObj: findKeyInObj
 };
