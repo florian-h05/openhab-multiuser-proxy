@@ -9,7 +9,8 @@
     "lint": "semistandard",
     "predocs": "rm -Rf ./docs/* && cp -rf ./../README.md .",
     "docs": "./node_modules/.bin/jsdoc --configure docs_config.json && mv ./docs/$npm_package_name/$npm_package_version/* ./docs/ && rm -Rf ./docs/$npm_package_name/$npm_package_version",
-    "postdocs": "rm README.md"
+    "postdocs": "rm README.md",
+    "test": "echo INFO: no test specified && exit 0"
   },
   "dependencies": {
     "dotenv": "^16.0.0",
