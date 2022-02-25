@@ -1,9 +1,9 @@
-import fetch from 'node-fetch';
+import backend from './backend.js';
 import { backendInfo } from './../../server.js';
 import { requireHeader } from './../middleware.js';
 
 /**
- * Provides all Sitemap routes.
+ * Provides required /sitemaps routes.
  */
 const sitemaps = (app) => {
   /**
@@ -39,26 +39,16 @@ const sitemaps = (app) => {
    *               items:
    *                 type: object
    */
-  app.get('/rest/sitemaps', requireHeader('X-OPENHAB-USER'), (req, res) => {
+  app.get('/rest/sitemaps', requireHeader('X-OPENHAB-USER'), async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
 
-    fetch(backendInfo.HOST + '/rest/sitemaps')
-      .then((res) => res.json()) // openHAB returns a JSON array of objects
-      .then((json) => {
-        const sitemaps = [];
-        for (const i in json) {
-          if (json[i].name === user || org.includes(json[i].name)) {
-            sitemaps.push(json[i]);
-          }
-        }
-        console.debug(`Received HTTP GET request from IP [${req.ip}] at [${req.url}]`);
-        res.status(200).send(sitemaps);
-      })
-      .catch((err) => {
-        console.error(`An error occurred when requesting backend [${req.url}]: ${err}`);
-        res.status(404).send();
-      });
+    try {
+      const data = await backend.getAllFiltered(backendInfo.HOST, user, org);
+      res.status(200).send(data);
+    } catch {
+      res.status(500).send();
+    }
   });
 
   /**
@@ -99,21 +89,17 @@ const sitemaps = (app) => {
    *             schema:
    *               type: object
    */
-  app.get('/rest/sitemaps/:sitemapname', requireHeader('X-OPENHAB-USER'), (req, res) => {
+  app.get('/rest/sitemaps/:sitemapname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
 
     if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
-      fetch(backendInfo.HOST + '/rest/sitemaps/' + req.params.sitemapname)
-        .then((res) => res.json())
-        .then((json) => {
-          console.debug(`Received HTTP GET request from IP [${req.ip}] at [${req.url}]`);
-          res.status(200).send(json);
-        })
-        .catch((err) => {
-          console.error(`An error occurred when requesting backend [${req.url}]: ${err}`);
-          res.status(404).send();
-        });
+      try {
+        const json = await backend.getSingle(backendInfo.HOST, req.params.sitemapname);
+        res.status(200).send(json);
+      } catch {
+        res.status(404).send();
+      }
     } else {
       res.status(404).send();
     }
