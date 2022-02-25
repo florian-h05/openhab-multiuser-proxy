@@ -1,3 +1,6 @@
+// WARNING: Directly export all functions; DO NOT use export default = { key: function }
+// This approach does not work.
+
 /**
  * Utils namespace. Providing utility functions.
  *
@@ -12,7 +15,7 @@
  * @param {String} key key to find in the object
  * @returns {Array} array of the values of all occurences of key
  */
-const findKeyInObj = (obj, key) => {
+export const findKeyInObj = function (obj, key) {
   const values = [];
   const iterator = (obj, key) => {
     for (const i in obj) {
@@ -27,8 +30,4 @@ const findKeyInObj = (obj, key) => {
   };
   iterator(obj, key);
   return values;
-};
-
-export default {
-  findKeyInObj: findKeyInObj
 };

@@ -1,4 +1,4 @@
-import findKeyInObj from '../../utils.js';
+import { findKeyInObj } from '../../utils.js';
 import sitemaps from '../sitemaps/backend.js';
 
 /**
@@ -17,8 +17,13 @@ import sitemaps from '../sitemaps/backend.js';
  * @returns {Array<String>} names of all Items in Sitemap
  */
 const getItemsOfSitemap = async function (HOST, sitemapname) {
-  const sitemap = await sitemaps.getSingle(HOST, sitemapname);
-  return findKeyInObj(sitemap.homepage.widgets, 'item').map(item => item.name);
+  try {
+    const sitemap = await sitemaps.getSingle(HOST, sitemapname);
+    const items = findKeyInObj(sitemap.homepage.widgets, 'item').map(item => item.name);
+    return items;
+  } catch (err) {
+    throw Error(err);
+  }
 };
 
 /**
@@ -33,10 +38,13 @@ const getItemsOfSitemap = async function (HOST, sitemapname) {
  */
 const getItemsForUser = async function (HOST, user, org) {
   const sitemapList = await (await sitemaps.getAllFiltered(HOST, user, org)).map(sitemap => sitemap.name);
+  console.info(`Sitemaps for ${user}/${org}: ${sitemapList}`);
   const items = [];
   for (const i in sitemapList) {
+    console.info(sitemapList[i]);
     items.push(...await getItemsOfSitemap(HOST, sitemapList[i]));
   }
+  console.info(`Allowed Items for ${user}/${org}: ${items}`);
   return items;
 };
 
@@ -52,7 +60,9 @@ const getItemsForUser = async function (HOST, user, org) {
  */
 const itemAllowedForUser = async function (HOST, user, org, itemname) {
   const items = await getItemsForUser(HOST, user, org);
-  return items.includes(itemname);
+  const allowed = items.includes(itemname);
+  console.info(`Access to ${itemname} allowed for ${user}/${org}: ${allowed}`);
+  return allowed;
 };
 
 export default {

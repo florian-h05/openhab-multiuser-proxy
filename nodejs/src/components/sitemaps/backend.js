@@ -16,9 +16,9 @@ import fetch from 'node-fetch';
  */
 const getAll = async function (HOST) {
   try {
-    const response = await fetch(HOST + '/rest/sitemaps');
+    const json = await (await fetch(HOST + '/rest/sitemaps')).json();
     console.debug(`Successfully requested backend ${HOST + '/rest/sitemaps'}`);
-    return await response.json();
+    return await json;
   } catch (err) {
     const msg = `An error occurred when requesting backend ${HOST + '/sitemaps'}: ${err}.`;
     console.error(msg);
@@ -62,9 +62,9 @@ const getAllFiltered = async function (HOST, user, org) {
  */
 const getSingle = async function (HOST, sitemapname) {
   try {
-    const response = await fetch(HOST + '/rest/sitemaps/' + sitemapname);
+    const json = await (await fetch(HOST + '/rest/sitemaps/' + sitemapname)).json();
     console.debug(`Successfully requested backend ${HOST + '/rest/sitemaps/' + sitemapname}`);
-    return await response.json();
+    return json;
   } catch (err) {
     const msg = `An error occurred when requesting backend ${HOST + '/sitemaps/' + sitemapname}: ${err}.`;
     console.error(msg);

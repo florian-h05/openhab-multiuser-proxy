@@ -46,12 +46,12 @@ const items = (app) => {
    *       403:
    *         description: Forbidden
    */
-  app.get('/rest/items/alllowed/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
+  app.get('/rest/items/allowed/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
 
     try {
-      const allowed = security.itemAllowedForUser(backendInfo.HOST, user, org, req.params.itemname);
+      const allowed = await security.itemAllowedForUser(backendInfo.HOST, user, org, req.params.itemname);
       (allowed) ? res.status(200).send('Allowed.') : res.status(403).send('Forbidden.');
     } catch {
       res.status(500).send('Internal server error.');
