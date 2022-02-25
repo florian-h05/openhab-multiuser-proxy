@@ -1,6 +1,5 @@
 import security from './security.js';
 import { backendInfo } from '../../server.js';
-import { requireHeader } from '../middleware.js';
 
 /**
  * Provide required /items routes.
@@ -46,7 +45,7 @@ const items = (app) => {
    *       403:
    *         description: Forbidden
    */
-  app.get('/rest/items/allowed/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
+  app.get('/rest/items/allowed/:itemname', async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
 

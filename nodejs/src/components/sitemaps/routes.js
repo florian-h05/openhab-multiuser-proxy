@@ -1,6 +1,5 @@
 import backend from './backend.js';
 import { backendInfo } from '../../server.js';
-import { requireHeader } from '../middleware.js';
 
 /**
  * Provides required /sitemaps routes.
@@ -42,7 +41,7 @@ const sitemaps = (app) => {
    *               items:
    *                 type: object
    */
-  app.get('/rest/sitemaps', requireHeader('X-OPENHAB-USER'), async (req, res) => {
+  app.get('/rest/sitemaps', async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
 
@@ -92,7 +91,7 @@ const sitemaps = (app) => {
    *             schema:
    *               type: object
    */
-  app.get('/rest/sitemaps/:sitemapname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
+  app.get('/rest/sitemaps/:sitemapname', async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
 

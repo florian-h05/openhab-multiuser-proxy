@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import swagger from './components/swagger.js';
 import routes from './components/routes.js';
+import { requireHeader } from './components/middleware.js';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ export const backendInfo = {
 const app = express();
 
 // Server setup.
+app.use(requireHeader('X-OPENHAB-USER'));
 app.use(helmet());
 app.use(express.json());
 
