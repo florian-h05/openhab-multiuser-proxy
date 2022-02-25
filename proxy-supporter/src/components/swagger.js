@@ -1,6 +1,5 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import * as swaggerUi from 'swagger-ui-express';
-import { PORT } from '../server.js';
 
 // Swagger API doc setup
 const swaggerDefinition = {
@@ -28,8 +27,8 @@ const swaggerDefinition = {
 const options = {
   swaggerDefinition,
   // Paths to files containing OpenAPI definitions
-  apis: ['./src/api/rest/**/routes.js'] // files containing annotations as above
+  apis: ['./src/**/routes.js'] // files containing annotations as above
 };
 const swaggerSpec = swaggerJsdoc(options);
 
-export default (app) => app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+export default (app) => app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

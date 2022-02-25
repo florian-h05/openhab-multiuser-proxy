@@ -1,11 +1,6 @@
-/**
- * Provides the routes.
- *
- * Copyright (c) 2021 Florian Hotze under MIT License
- */
-import sitemaps from './sitemaps/routes.js';
+import sitemaps from './components/sitemaps/routes.js';
 
-export default (app, fetch, backend) => {
+export default (app) => {
   /**
    * @swagger
    * /:
@@ -30,5 +25,5 @@ export default (app, fetch, backend) => {
   });
 
   // Other routes
-  sitemaps(app, fetch, backend);
+  sitemaps(app);
 };
