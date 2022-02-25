@@ -1,5 +1,18 @@
 import sitemaps from './components/sitemaps/routes.js';
+import items from './components/items/routes.js';
 
+/**
+ * Routes namespace. Providing routes.
+ *
+ * @namespace routes
+ */
+
+/**
+ * Main router.
+ *
+ * @memberof routes
+ * @param {*} app expressjs app
+ */
 export default (app) => {
   /**
    * @swagger
@@ -26,4 +39,5 @@ export default (app) => {
 
   // Other routes
   sitemaps(app);
+  items(app);
 };

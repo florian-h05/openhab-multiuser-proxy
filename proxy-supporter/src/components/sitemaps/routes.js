@@ -4,6 +4,9 @@ import { requireHeader } from './../middleware.js';
 
 /**
  * Provides required /sitemaps routes.
+ *
+ * @memberof routes
+ * @param {*} app expressjs app
  */
 const sitemaps = (app) => {
   /**
@@ -15,14 +18,14 @@ const sitemaps = (app) => {
    *       - in: header
    *         name: X-OPENHAB-USER
    *         required: true
-   *         description: Name of user.
+   *         description: Name of user
    *         schema:
    *           type: string
    *         style: form
    *       - in: header
    *         name: X-OPENHAB-ORG
    *         required: false
-   *         description: Organisations the user is member of.
+   *         description: Organisations the user is member of
    *         schema:
    *           type: array
    *           items:
@@ -60,21 +63,21 @@ const sitemaps = (app) => {
    *       - in: path
    *         name: sitemapname
    *         required: true
-   *         description: Sitemap name.
+   *         description: Sitemap name
    *         schema:
    *           type: string
    *         style: form
    *       - in: header
    *         name: X-OPENHAB-USER
    *         required: true
-   *         description: Name of user.
+   *         description: Name of user
    *         schema:
    *           type: string
    *         style: form
    *       - in: header
    *         name: X-OPENHAB-ORG
    *         required: false
-   *         description: Organisations the user is member of.
+   *         description: Organisations the user is member of
    *         schema:
    *           type: array
    *           items:

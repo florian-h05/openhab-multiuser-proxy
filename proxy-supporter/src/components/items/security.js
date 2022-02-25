@@ -1,20 +1,20 @@
-import { findKeyInObj } from './../../utils.js';
+import findKeyInObj from './../../utils.js';
 import sitemaps from './../sitemaps/backend.js';
 
 /**
  * Items security namespace. Provides security checks for Item access.
  *
- * @namespace items.security
+ * @namespace itemsSecurity
  */
 
 /**
  * Get names of all Items in Sitemap.
  *
- * @memberof items.security
+ * @memberof itemsSecurity
  * @private
  * @param {String} HOST hostname of openHAB server
  * @param {*} sitemapname Sitemap name
- * @returns {Array[String]} names of all Items in Sitemap
+ * @returns {Array<String>} names of all Items in Sitemap
  */
 const getItemsOfSitemap = async function (HOST, sitemapname) {
   const sitemap = await sitemaps.getSingle(HOST, sitemapname);
@@ -24,12 +24,12 @@ const getItemsOfSitemap = async function (HOST, sitemapname) {
 /**
  * Get names of all Items allowed for a client.
  *
- * @memberof items.security
+ * @memberof itemsSecurity
  * @private
  * @param {String} HOST hostname of openHAB server
  * @param {String} user username
- * @param {Array[String]} org array of organisations the user is member
- * @returns {Array[String]} names of Items allowed for client
+ * @param {Array<String>} org array of organisations the user is member
+ * @returns {Array<String>} names of Items allowed for client
  */
 const getItemsForUser = async function (HOST, user, org) {
   const sitemapList = await (await sitemaps.getAllFiltered(HOST, user, org)).map(sitemap => sitemap.name);
@@ -43,10 +43,10 @@ const getItemsForUser = async function (HOST, user, org) {
 /**
  * Check whether Item access is allowed for client.
  *
- * @memberof items.security
+ * @memberof itemsSecurity
  * @param {String} HOST hostname of openHAB server
  * @param {String} user username
- * @param {Array[String]} org array of organisations the user is member
+ * @param {Array<String>} org array of organisations the user is member
  * @param {String} itemname name of Item
  * @returns {Boolean} whether Item access is allowed or not
  */
