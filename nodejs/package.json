@@ -1,0 +1,48 @@
+{
+  "name": "openhab-multiuser-proxy",
+  "description": "Multi-User support for openHAB REST API with NGINX.",
+  "version": "1.0.0",
+  "private": false,
+  "scripts": {
+    "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js",
+    "lint": "semistandard",
+    "predocs": "rm -Rf ./docs/* && cp -rf ./../README.md .",
+    "docs": "./node_modules/.bin/jsdoc --configure docs_config.json && mv ./docs/$npm_package_name/$npm_package_version/* ./docs/ && rm -Rf ./docs/$npm_package_name/$npm_package_version",
+    "postdocs": "rm README.md"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "~4.16.1",
+    "helmet": "^5.0.2",
+    "node-fetch": "^3.2.0",
+    "swagger-jsdoc": "^6.1.0",
+    "swagger-ui-express": "^4.3.0",
+    "yargs": "^17.3.1"
+  },
+  "main": "src/server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/florian-h05/openhab-multiuser-proxy.git"
+  },
+  "keywords": [
+    "openHAB",
+    "NGINX",
+    "REST",
+    "multi-user",
+    "smarthome"
+  ],
+  "author": "Florian Hotze",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/florian-h05/openhab-multiuser-proxy/issues"
+  },
+  "homepage": "https://github.com/florian-h05/openhab-multiuser-proxy#readme",
+  "devDependencies": {
+    "docdash": "^1.2.0",
+    "jsdoc": "^3.6.10",
+    "nodemon": "^2.0.15",
+    "semistandard": "^16.0.1"
+  },
+  "type": "module"
+}

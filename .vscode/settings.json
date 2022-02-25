@@ -1,0 +1,9 @@
+{
+    "standard.engine": "semistandard",
+    "standard.workingDirectories": [
+        "./proxy-supporter"
+    ],
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.detectIndentation": false,
+    "editor.tabSize": 2
+}
