@@ -38,13 +38,12 @@ const getItemsOfSitemap = async function (HOST, sitemapname) {
  */
 const getItemsForUser = async function (HOST, user, org) {
   const sitemapList = await (await sitemaps.getAllFiltered(HOST, user, org)).map(sitemap => sitemap.name);
-  console.info(`Sitemaps for ${user}/${org}: ${sitemapList}`);
+  console.debug(`Sitemaps for ${user}/${org}: ${sitemapList}`);
   const items = [];
   for (const i in sitemapList) {
-    console.info(sitemapList[i]);
     items.push(...await getItemsOfSitemap(HOST, sitemapList[i]));
   }
-  console.info(`Allowed Items for ${user}/${org}: ${items}`);
+  console.debug(`Allowed Items for ${user}/${org}: ${items}`);
   return items;
 };
 
