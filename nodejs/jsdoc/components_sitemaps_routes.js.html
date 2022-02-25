@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>components/sitemaps/routes.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='methods'><li data-type='method'><a href="itemsSecurity.html#.itemAllowedForUser">itemAllowedForUser</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='methods'><li data-type='method'><a href="sitemapsBackend.html#.getAllFiltered">getAllFiltered</a></li><li data-type='method'><a href="sitemapsBackend.html#.getSingle">getSingle</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">components/sitemaps/routes.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import backend from './backend.js';
+import { backendInfo } from '../../server.js';
+
+/**
+ * Provides required /sitemaps routes.
+ *
+ * @memberof routes
+ * @param {*} app expressjs app
+ */
+const sitemaps = (app) => {
+  /**
+   * @swagger
+   * /rest/sitemaps:
+   *   get:
+   *     summary: Get all available sitemaps.
+   *     parameters:
+   *       - in: header
+   *         name: X-OPENHAB-USER
+   *         required: true
+   *         description: Name of user
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-ORG
+   *         required: false
+   *         description: Organisations the user is member of
+   *         schema:
+   *           type: array
+   *           items:
+   *             type: string
+   *         style: form
+   *         explode: true
+   *     responses:
+   *       200:
+   *         description: OK
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   */
+  app.get('/rest/sitemaps', async (req, res) => {
+    const org = req.headers['x-openhab-org'] || [];
+    const user = req.headers['x-openhab-user'];
+
+    try {
+      const data = await backend.getAllFiltered(backendInfo.HOST, user, org);
+      res.status(200).send(data);
+    } catch {
+      res.status(500).send();
+    }
+  });
+
+  /**
+   * @swagger
+   * /rest/sitemaps/{sitemapname}:
+   *   get:
+   *     summary: Get sitemap by name.
+   *     parameters:
+   *       - in: path
+   *         name: sitemapname
+   *         required: true
+   *         description: Sitemap name
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-USER
+   *         required: true
+   *         description: Name of user
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-ORG
+   *         required: false
+   *         description: Organisations the user is member of
+   *         schema:
+   *           type: array
+   *           items:
+   *             type: string
+   *         style: form
+   *         explode: true
+   *     responses:
+   *       200:
+   *         description: OK
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   */
+  app.get('/rest/sitemaps/:sitemapname', async (req, res) => {
+    const org = req.headers['x-openhab-org'] || [];
+    const user = req.headers['x-openhab-user'];
+
+    if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
+      try {
+        const json = await backend.getSingle(backendInfo.HOST, req.params.sitemapname);
+        res.status(200).send(json);
+      } catch {
+        res.status(404).send();
+      }
+    } else {
+      res.status(404).send();
+    }
+  });
+};
+
+export default sitemaps;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Fri Feb 25 2022 20:34:43 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+
+</body>
+</html>
