@@ -7,7 +7,7 @@ import pino from 'pino-http';
 import logger from './logger.js';
 import swagger from './components/swagger.js';
 import routes from './components/routes.js';
-import { requireHeader, replaceSpaceHyphenWithUnderscore } from './components/middleware.js';
+import { replaceSpaceHyphenWithUnderscore } from './components/middleware.js';
 
 dotenv.config();
 
@@ -34,10 +34,11 @@ export const backendInfo = {
 const app = express();
 
 // Server setup.
-app.use(requireHeader('X-OPENHAB-USER'));
+app.set('trust proxy', 'loopback');
 app.use(replaceSpaceHyphenWithUnderscore(['X-OPENHAB-USER', 'X-OPENHAB-ORG']));
 app.use(helmet()); // Helmet helps you secure your Express apps by setting various HTTP headers.
 app.use(express.json());
+app.use(express.text());
 app.use(pino({
   logger: logger,
   customLogLevel: function (res, err) {
