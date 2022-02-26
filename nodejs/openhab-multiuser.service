@@ -1,0 +1,19 @@
+[Unit]
+Description=openHAB multiuser proxy (NodeJS) together with NGINX
+Documentation=https://github.com/florian-h05/openhab-multiuser-proxy
+After=openhab.service
+PartOf=openhab.service
+
+[Service]
+# Available: fatal, error, warn, info, debug, trace
+Environment=PINO_LOG_LEVEL=info
+# Sets the log path, if none is set logs to console.
+Environment=PINO_LOG_FILE=/var/log/openhab/multiuser-proxy.log
+Type=simple
+User=openhab
+Group=openhab
+ExecStart=/usr/bin/node /usr/lib/node_modules/openhab-multiuser-proxy/src/server.js --port=8081 --host=http://127.0.0.1:8080
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

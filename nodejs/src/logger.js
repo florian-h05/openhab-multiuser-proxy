@@ -10,4 +10,4 @@ export default pino({
       return { level: label };
     }
   }
-});
+}, pino.destination(process.env.PINO_LOG_FILE));

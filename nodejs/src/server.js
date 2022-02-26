@@ -27,7 +27,7 @@ const argv = yargs(hideBin(process.argv))
   .parse();
 
 // Server variables.
-export const PORT = (argv.port !== undefined) ? argv.port : (process.env.PORT !== undefined) ? parseInt(process.env.PORT) : 3001;
+export const PORT = (argv.port !== undefined) ? argv.port : (process.env.PORT !== undefined) ? parseInt(process.env.PORT) : 8081;
 export const backendInfo = {
   HOST: (argv.host !== undefined) ? argv.host : (process.env.HOST !== undefined) ? process.env.HOST : 'http://127.0.0.1:8080'
 };
@@ -40,11 +40,13 @@ app.use(express.json());
 app.use(pino({
   logger: logger,
   customLogLevel: function (res, err) {
-    if (res.statusCode >= 400 && res.statusCode < 500) {
+    if (res.statusCode >= 400 && res.statusCode < 500) { // Client error
       return 'warn';
-    } else if (res.statusCode >= 500 || err) {
+    } else if (res.statusCode >= 500 || err) { // Server error
       return 'error';
-    } else if (res.statusCode >= 300 && res.statusCode < 400) {
+    } else if (res.statusCode >= 300 && res.statusCode < 400) { // Redirections
+      return 'silent';
+    } else if (res.statusCode >= 200 && res.statusCode < 300) { // Success
       return 'silent';
     }
     return 'info';

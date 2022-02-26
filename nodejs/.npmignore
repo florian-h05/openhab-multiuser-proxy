@@ -1,5 +1,6 @@
 .env
 docs_config.json
+
 # Logs
 logs
 *.log
@@ -18,3 +19,6 @@ pids
 
 # Output of 'npm run docs'
 docs
+
+# systemd service file
+openhab-multiuser.service
