@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>utils.js - Documentation</title>
+    <title>middlewares - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,70 +34,235 @@
 
 <div id="main">
     
-    <h1 class="page-title">utils.js</h1>
+    <h1 class="page-title">middlewares</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>// WARNING: Directly export all functions; DO NOT use export default = { key: function }
-// This approach does not work.
+        <h2>
+        middlewares
+        </h2>
+        
+    
+</header>
 
-/**
- * Utils namespace. Providing utility functions.
- *
- * @namespace utils
- */
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-/**
- * Get the value of all occurences of a key from a nested object.
- *
- * @memberof utils
- * @param {Object} obj object
- * @param {String} key key to find in the object
- * @returns {Array} array of the values of all occurences of key
- */
-export const findKeyInObj = function (obj, key) {
-  const values = [];
-  const iterator = (obj, key) => {
-    for (const i in obj) {
-      if (i === key) {
-        values.push(obj[i]);
-        return;
-      }
-      if (typeof obj[i] === 'object') {
-        iterator(obj[i], key);
-      }
-    }
-  };
-  iterator(obj, key);
-  return values;
-};
+<dl class="details">
 
-/**
- * Headers for backend requests using node-fetch.
- *
- * @memberof utils
- * @param {*} expressReq request object from expressjs
- * @returns {Object} headers for node-fetch
- */
-export const getHeaders = function (expressReq) {
-  return {
-    Host: expressReq.headers.host,
-    'X-Real-IP': expressReq.headers['x-real-ip'],
-    'X-Forwarded-For': expressReq.headers['x-forwarded-for'],
-    'X-Forwarded-Proto': expressReq.headers['x-forwarded-proto'],
-    Connection: 'upgrade',
-    Upgrade: expressReq.headers.Upgrade
-  };
-};
-</code></pre>
-        </article>
-    </section>
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_middleware.js.html">components/middleware.js</a>, <a href="components_middleware.js.html#line3">line 3</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+            
+                <div class="description usertext"><p>Middlewares namespace. Provides middlewares for expressjs.</p></div>
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".exports.requireHeader"><span class="type-signature">(static, constant) </span>exports.requireHeader<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_middleware.js.html">components/middleware.js</a>, <a href="components_middleware.js.html#line15">line 15</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Require header in request.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".exports.replaceSpaceHyphenWithUnderscore"><span class="type-signature">(static, constant) </span>exports.replaceSpaceHyphenWithUnderscore<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_middleware.js.html">components/middleware.js</a>, <a href="components_middleware.js.html#line36">line 36</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Replace all spaces and hyphens with underscores in headers.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
