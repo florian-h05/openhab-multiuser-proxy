@@ -31,3 +31,21 @@ export const findKeyInObj = function (obj, key) {
   iterator(obj, key);
   return values;
 };
+
+/**
+ * Headers for backend requests using node-fetch.
+ *
+ * @memberof utils
+ * @param {*} expressReq request object from expressjs
+ * @returns {Object} headers for node-fetch
+ */
+export const getHeaders = function (expressReq) {
+  return {
+    Host: expressReq.headers.host,
+    'X-Real-IP': expressReq.headers['x-real-ip'],
+    'X-Forwarded-For': expressReq.headers['x-forwarded-for'],
+    'X-Forwarded-Proto': expressReq.headers['x-forwarded-proto'],
+    Connection: 'upgrade',
+    Upgrade: expressReq.headers.Upgrade
+  };
+};

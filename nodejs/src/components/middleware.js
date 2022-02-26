@@ -1,5 +1,17 @@
 import logger from './../logger.js';
 
+/**
+ * Middlewares namespace. Provides middlewares for expressjs.
+ *
+ * @namespace middlewares
+ */
+
+/**
+ * Require header in request.
+ *
+ * @memberof middlewares
+ * @param {String} header header name
+ */
 export const requireHeader = (header) => {
   return function (req, res, next) {
     if (!req.headers[header.toLowerCase()]) {
@@ -18,12 +30,14 @@ export const requireHeader = (header) => {
 /**
  * Replace all spaces and hyphens with underscores in headers.
  *
- * @param {Array<String>} headers headers to operate on
+ * @memberof middlewares
+ * @param {Array<String>} headers names of headers to operate on
  */
 export const replaceSpaceHyphenWithUnderscore = (headers) => {
   return function (req, res, next) {
     for (const i in headers) {
-      req.headers[headers[i].toLowerCase()] = req.headers[headers[i].toLowerCase()].replace(/( )|(-)/g, '_');
+      if (req.headers[headers[i]]) req.headers[headers[i].toLowerCase()] = req.headers[headers[i].toLowerCase()].replace(/( )|(-)/g, '_');
     }
+    next();
   };
 };
