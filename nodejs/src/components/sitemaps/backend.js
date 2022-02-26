@@ -1,3 +1,4 @@
+import logger from './../../logger.js';
 import fetch from 'node-fetch';
 
 /**
@@ -17,12 +18,12 @@ import fetch from 'node-fetch';
 const getAll = async function (HOST) {
   try {
     const json = await (await fetch(HOST + '/rest/sitemaps')).json();
-    console.debug(`Successfully requested backend ${HOST + '/rest/sitemaps'}`);
+    logger.debug(`Successfully requested backend ${HOST + '/rest/sitemaps'}`);
     return await json;
   } catch (err) {
-    const msg = `An error occurred when requesting backend ${HOST + '/sitemaps'}: ${err}.`;
-    console.error(msg);
-    throw Error(msg);
+    const error = new Error(`An error occurred while requesting backend ${HOST + '/rest/sitemaps'}: ${err}.`);
+    logger.error(error);
+    error();
   }
 };
 
@@ -46,6 +47,7 @@ const getAllFiltered = async function (HOST, user, org) {
         sitemaps.push(json[i]);
       }
     }
+    logger.trace({ user: user, orgs: org }, `Number of Sitemaps: ${sitemaps.length}`);
     return sitemaps;
   } catch (err) {
     throw Error(err);
@@ -63,12 +65,12 @@ const getAllFiltered = async function (HOST, user, org) {
 const getSingle = async function (HOST, sitemapname) {
   try {
     const json = await (await fetch(HOST + '/rest/sitemaps/' + sitemapname)).json();
-    console.debug(`Successfully requested backend ${HOST + '/rest/sitemaps/' + sitemapname}`);
+    logger.debug(`Successfully requested backend ${HOST + '/rest/sitemaps/' + sitemapname}`);
     return json;
   } catch (err) {
-    const msg = `An error occurred when requesting backend ${HOST + '/sitemaps/' + sitemapname}: ${err}.`;
-    console.error(msg);
-    throw Error(msg);
+    const error = new Error(`An error occurred when requesting backend ${HOST + '/rest/sitemaps/' + sitemapname}: ${err}.`);
+    logger.error(error);
+    error();
   }
 };
 
