@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>components/routes.js - Documentation</title>
+    <title>components/items/backend.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,7 +34,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">components/routes.js</h1>
+    <h1 class="page-title">components/items/backend.js</h1>
     
 
     
@@ -44,48 +44,37 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import sitemaps from './sitemaps/routes.js';
-import items from './items/routes.js';
+            <pre class="prettyprint source linenums"><code>import logger from './../../logger.js';
+import fetch from 'node-fetch';
+import { getHeaders } from '../../utils.js';
 
 /**
- * Routes namespace. Providing routes.
+ * Items backend namespace. Providing access to the openHAB backend.
  *
- * @namespace routes
+ * @namespace itemsBackend
  */
 
 /**
- * Main router.
+ * Sends a command to an Item.
  *
- * @memberof routes
- * @param {*} app expressjs app
+ * @memberof itemsBackend
+ * @param {String} HOST hostname of openHAB server
+ * @param {*} expressReq request object from expressjs
+ * @param {String} itemname Item name
+ * @param {String} command valid item command (e.g. ON, OFF, UP, DOWN, REFRESH)
+ * @returns {Integer} Response code from backend
  */
-export default (app) => {
-  /**
-   * @swagger
-   * /:
-   *   get:
-   *     summary: Retrieve server information.
-   *     responses:
-   *       200:
-   *         description: Server information.
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   */
-  app.get('/', (req, res) => {
-    res.send({
-      name: 'openHAB Multiuser Proxy - Supporting Logic',
-      description: process.env.npm_package_description,
-      author: 'Florian Hotze',
-      version: process.env.npm_package_version,
-      license: 'GNU GPL-3.0'
-    });
-  });
-
-  // Other routes
-  sitemaps(app);
-  items(app);
+export const sendCommand = async function (HOST, expressReq, itemname, command) {
+  const headers = await getHeaders(expressReq);
+  try {
+    const status = await (await fetch(HOST + '/rest/items/' + itemname, { headers: headers, method: 'POST', body: command })).status;
+    logger.debug(`sendCommand(): Sent command ${command} to ${HOST + '/rest/items/' + itemname}, HTTP code ${status}`);
+    return await status;
+  } catch (err) {
+    const error = new Error(`sendCommand(): An error occurred when sending command to ${HOST + '/rest/items/' + itemname}: ${err}.`);
+    logger.error(error);
+    error();
+  }
 };
 </code></pre>
         </article>
