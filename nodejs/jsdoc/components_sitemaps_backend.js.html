@@ -29,7 +29,7 @@
     
     <input type="text" id="nav-search" placeholder="Search" />
     
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendCommand">exports.sendCommand</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='methods'><li data-type='method'><a href="itemsSecurity.html#.itemAllowedForUser">itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='methods'><li data-type='method'><a href="sitemapsBackend.html#.getAllFiltered">getAllFiltered</a></li><li data-type='method'><a href="sitemapsBackend.html#.getSingle">getSingle</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='methods'><li data-type='method'><a href="itemsSecurity.html#.itemAllowedForUser">itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -47,6 +47,7 @@
             <pre class="prettyprint source linenums"><code>import logger from './../../logger.js';
 import fetch from 'node-fetch';
 import { getHeaders } from '../../utils.js';
+import { sitemapListDb } from '../../db.js';
 
 /**
  * Sitemaps backend namespace. Providing access to the openHAB backend.
@@ -56,6 +57,7 @@ import { getHeaders } from '../../utils.js';
 
 /**
  * Get all available Sitemaps.
+ * Utilising LokiJS to cache the Sitemap list for up to two minutes for better performance.
  *
  * @memberof sitemapsBackend
  * @private
@@ -63,14 +65,26 @@ import { getHeaders } from '../../utils.js';
  * @param {*} expressReq request object from expressjs
  * @returns {Array&lt;Object>} array of Sitemaps
  */
-const getAll = async function (HOST, expressReq) {
+export const getAllSitemaps = async function (HOST, expressReq) {
+  const now = Date.now();
+  const sitemapsList = sitemapListDb.findOne({ name: 'list' });
+  if (sitemapsList) {
+    if (now &lt; sitemapsList.lastupdate + 120000) {
+      // Currently stored version not older than 2 min.
+      logger.debug('getAllSitemaps(): Found in database and not older than 2 min.');
+      return sitemapsList.json;
+    }
+    sitemapListDb.findAndRemove({ name: 'list' });
+  }
+
   const headers = await getHeaders(expressReq);
   try {
     const json = await (await fetch(HOST + '/rest/sitemaps', { headers: headers })).json();
-    logger.debug(`getAll(): Successfully requested backend ${HOST + '/rest/sitemaps'}`);
+    sitemapListDb.insert({ name: 'list', lastupdate: now, json: json });
+    logger.debug(`getAllSitemaps(): Successfully requested backend ${HOST + '/rest/sitemaps'}`);
     return await json;
   } catch (err) {
-    const error = new Error(`getAll(): An error occurred while requesting backend ${HOST + '/rest/sitemaps'}: ${err}.`);
+    const error = new Error(`getAllSitemaps(): An error occurred while requesting backend ${HOST + '/rest/sitemaps'}: ${err}`);
     logger.error(error);
     error();
   }
@@ -86,18 +100,17 @@ const getAll = async function (HOST, expressReq) {
  * @param {Array&lt;String>} org array of organisations the user is member
  * @returns {Array&lt;Object>} array of Sitemaps
  */
-const getAllFiltered = async function (HOST, expressReq, user, org) {
+export const getAllSitemapsFiltered = async function (HOST, expressReq, user, org) {
   if (!user) throw Error('Paramater user is required.');
   if (!org) org = [];
   try {
-    const json = await getAll(HOST, expressReq);
+    const json = await getAllSitemaps(HOST, expressReq);
     const sitemaps = [];
     for (const i in json) {
       if (json[i].name === user || org.includes(json[i].name)) {
         sitemaps.push(json[i]);
       }
     }
-    logger.trace({ user: user, orgs: org }, `Number of Sitemaps: ${sitemaps.length}`);
     return sitemaps;
   } catch (err) {
     throw Error(err);
@@ -113,23 +126,17 @@ const getAllFiltered = async function (HOST, expressReq, user, org) {
  * @param {String} sitemapname Sitemap name
  * @returns {Object} Sitemap
  */
-const getSingle = async function (HOST, expressReq, sitemapname) {
+export const getSitemap = async function (HOST, expressReq, sitemapname) {
   const headers = await getHeaders(expressReq);
   try {
     const json = await (await fetch(HOST + '/rest/sitemaps/' + sitemapname, { headers: headers })).json();
-    logger.debug(`getSingle(): Successfully requested backend ${HOST + '/rest/sitemaps/' + sitemapname}`);
+    logger.debug(`getSitemap(): Successfully requested backend ${HOST + '/rest/sitemaps/' + sitemapname}`);
     return await json;
   } catch (err) {
-    const error = new Error(`getSingle(): An error occurred when requesting backend ${HOST + '/rest/sitemaps/' + sitemapname}: ${err}.`);
+    const error = new Error(`getSitemap(): An error occurred when requesting backend ${HOST + '/rest/sitemaps/' + sitemapname}: ${err}`);
     logger.error(error);
     error();
   }
-};
-
-export default {
-  getAll: getAll,
-  getAllFiltered: getAllFiltered,
-  getSingle: getSingle
 };
 </code></pre>
         </article>
@@ -145,7 +152,7 @@ export default {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sat Feb 26 2022 18:48:53 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sat Feb 26 2022 20:09:30 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
