@@ -1,7 +1,7 @@
 import security from './security.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
-import { sendItemCommand } from './backend.js';
+import { sendItemCommand, getItemState } from './backend.js';
 
 /**
  * Provide required /items routes.
@@ -64,6 +64,63 @@ const items = (app) => {
       if (allowed) {
         const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
         res.status(status).send();
+      } else {
+        res.status(404).send();
+      }
+    } catch {
+      res.status(500).send('Internal server error.');
+    }
+  });
+
+  /**
+   * @swagger
+   * /rest/items/{itemname}/state:
+   *   get:
+   *     summary: Gets the state of an Item.
+   *     parameters:
+   *       - in: path
+   *         name: itemname
+   *         required: true
+   *         description: Item name
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-USER
+   *         required: true
+   *         description: Name of user
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-ORG
+   *         required: false
+   *         description: Organisations the user is member of
+   *         schema:
+   *           type: array
+   *           items:
+   *             type: string
+   *         style: form
+   *         explode: true
+   *     responses:
+   *       200:
+   *         description: OK
+   *         content:
+   *           text/plain:
+   *             schema:
+   *               type: string
+   *       404:
+   *         description: Item not found
+   */
+  app.get('/rest/items/:itemname/state', requireHeader('X-OPENHAB-USER'), async (req, res) => {
+    const org = req.headers['x-openhab-org'] || [];
+    const user = req.headers['x-openhab-user'];
+
+    try {
+      const allowed = await security.itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
+      if (allowed) {
+        const response = await getItemState(backendInfo.HOST, req, req.params.itemname);
+        res.status(response.status).send(response.state);
       } else {
         res.status(404).send();
       }

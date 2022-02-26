@@ -60,7 +60,7 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
   for (const i in sitemapList) {
     items.push(...await getItemsOfSitemap(HOST, expressReq, sitemapList[i]));
   }
-  logger.debug({ user: user, orgs: org }, `Allowed Items: [${items}]`);
+  logger.debug({ user: user, orgs: org }, `getItemsForUser(): Allowed Items: [${items}]`);
   return items;
 };
 
@@ -78,7 +78,7 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
 const itemAllowedForUser = async function (HOST, expressReq, user, org, itemname) {
   const items = await getItemsForUser(HOST, expressReq, user, org);
   const allowed = items.includes(itemname);
-  logger.info({ user: user, orgs: org }, `Access to ${itemname} allowed: ${allowed}`);
+  logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed}`);
   return allowed;
 };
 

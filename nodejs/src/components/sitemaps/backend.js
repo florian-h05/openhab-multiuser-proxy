@@ -55,7 +55,7 @@ export const getAllSitemaps = async function (HOST, expressReq) {
  * @returns {Array<Object>} array of Sitemaps
  */
 export const getAllSitemapsFiltered = async function (HOST, expressReq, user, org) {
-  if (!user) throw Error('Paramater user is required.');
+  if (!user) throw Error('Parameter user is required!');
   if (!org) org = [];
   try {
     const json = await getAllSitemaps(HOST, expressReq);
