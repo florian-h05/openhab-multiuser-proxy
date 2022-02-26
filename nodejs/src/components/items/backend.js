@@ -18,14 +18,14 @@ import { getHeaders } from '../../utils.js';
  * @param {String} command valid item command (e.g. ON, OFF, UP, DOWN, REFRESH)
  * @returns {Integer} Response code from backend
  */
-export const sendCommand = async function (HOST, expressReq, itemname, command) {
+export const sendItemCommand = async function (HOST, expressReq, itemname, command) {
   const headers = await getHeaders(expressReq);
   try {
     const status = await (await fetch(HOST + '/rest/items/' + itemname, { headers: headers, method: 'POST', body: command })).status;
-    logger.debug(`sendCommand(): Sent command ${command} to ${HOST + '/rest/items/' + itemname}, HTTP code ${status}`);
+    logger.debug(`sendItemCommand(): Sent command ${command} to ${HOST + '/rest/items/' + itemname}, HTTP response code ${status}`);
     return await status;
   } catch (err) {
-    const error = new Error(`sendCommand(): An error occurred when sending command to ${HOST + '/rest/items/' + itemname}: ${err}.`);
+    const error = new Error(`sendItemCommand(): An error occurred when sending command to ${HOST + '/rest/items/' + itemname}: ${err}`);
     logger.error(error);
     error();
   }

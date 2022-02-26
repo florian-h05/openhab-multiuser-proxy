@@ -1,4 +1,4 @@
-import backend from './backend.js';
+import { getAllSitemapsFiltered, getSitemap } from './backend.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
 
@@ -47,7 +47,7 @@ const sitemaps = (app) => {
     const user = req.headers['x-openhab-user'];
 
     try {
-      const data = await backend.getAllFiltered(backendInfo.HOST, req, user, org);
+      const data = await getAllSitemapsFiltered(backendInfo.HOST, req, user, org);
       res.status(200).send(data);
     } catch {
       res.status(500).send();
@@ -98,7 +98,7 @@ const sitemaps = (app) => {
 
     if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
       try {
-        const json = await backend.getSingle(backendInfo.HOST, req, req.params.sitemapname);
+        const json = await getSitemap(backendInfo.HOST, req, req.params.sitemapname);
         res.status(200).send(json);
       } catch {
         res.status(404).send();
@@ -159,7 +159,7 @@ const sitemaps = (app) => {
 
     if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
       try {
-        const json = await backend.getSingle(backendInfo.HOST, req, req.params.sitemapname + '/' + req.params.pageid);
+        const json = await getSitemap(backendInfo.HOST, req, req.params.sitemapname + '/' + req.params.pageid);
         res.status(200).send(json);
       } catch {
         res.status(404).send();

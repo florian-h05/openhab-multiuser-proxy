@@ -1,7 +1,7 @@
 import security from './security.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
-import { sendCommand } from './backend.js';
+import { sendItemCommand } from './backend.js';
 
 /**
  * Provide required /items routes.
@@ -62,7 +62,7 @@ const items = (app) => {
     try {
       const allowed = await security.itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
       if (allowed) {
-        const status = await sendCommand(backendInfo.HOST, req, req.params.itemname, req.body);
+        const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
         res.status(status).send();
       } else {
         res.status(404).send();

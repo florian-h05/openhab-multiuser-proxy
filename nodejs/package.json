@@ -18,6 +18,7 @@
     "dotenv": "^16.0.0",
     "express": "~4.17.0",
     "helmet": "^5.0.2",
+    "lokijs": "^1.5.12",
     "node-fetch": "^3.2.0",
     "pino": "^7.8.0",
     "pino-http": "^6.6.0",
@@ -44,6 +45,7 @@
   },
   "homepage": "https://github.com/florian-h05/openhab-multiuser-proxy#readme",
   "devDependencies": {
+    "@types/lokijs": "^1.5.7",
     "docdash": "^1.2.0",
     "jsdoc": "^3.6.10",
     "nodemon": "^2.0.15",

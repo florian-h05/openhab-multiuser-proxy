@@ -1,6 +1,7 @@
 import logger from './../../logger.js';
 import { findKeyInObj } from '../../utils.js';
-import sitemaps from '../sitemaps/backend.js';
+import { getAllSitemapsFiltered, getSitemap } from '../sitemaps/backend.js';
+import { sitemapsDb } from '../../db.js';
 
 /**
  * Items security namespace. Provides security checks for Item access.
@@ -10,6 +11,7 @@ import sitemaps from '../sitemaps/backend.js';
 
 /**
  * Get names of all Items in Sitemap.
+ * Utilising LokiJS to cache the Items for up to two minutes for better performance.
  *
  * @memberof itemsSecurity
  * @private
@@ -19,10 +21,22 @@ import sitemaps from '../sitemaps/backend.js';
  * @returns {Array<String>} names of all Items in Sitemap
  */
 const getItemsOfSitemap = async function (HOST, expressReq, sitemapname) {
+  const now = Date.now();
+  const itemsDb = sitemapsDb.findOne({ name: sitemapname });
+  if (itemsDb) {
+    if (now < itemsDb.lastupdate + 120000) {
+      // Currently stored version not older than 2 min.
+      logger.debug(`getItemsOfSitemap(): Items of Sitemap ${sitemapname} found in database and not older than 2 min.`);
+      return itemsDb.items;
+    }
+    sitemapsDb.findAndRemove({ name: sitemapname });
+  }
+
   try {
-    const sitemap = await sitemaps.getSingle(HOST, expressReq, sitemapname);
+    const sitemap = await getSitemap(HOST, expressReq, sitemapname);
     const items = findKeyInObj(sitemap.homepage.widgets, 'item').map(item => item.name);
-    logger.trace({ sitemap: sitemapname }, `Items: [${items}]`);
+    sitemapsDb.insert({ name: sitemapname, lastupdate: now, items: items });
+    logger.debug({ sitemap: sitemapname }, `getItemOfSitemap(): Items of Sitemap ${sitemapname} fetched from backend`);
     return items;
   } catch (err) {
     throw Error(err);
@@ -41,7 +55,7 @@ const getItemsOfSitemap = async function (HOST, expressReq, sitemapname) {
  * @returns {Array<String>} names of Items allowed for client
  */
 const getItemsForUser = async function (HOST, expressReq, user, org) {
-  const sitemapList = await (await sitemaps.getAllFiltered(HOST, expressReq, user, org)).map(sitemap => sitemap.name);
+  const sitemapList = await (await getAllSitemapsFiltered(HOST, expressReq, user, org)).map(sitemap => sitemap.name);
   const items = [];
   for (const i in sitemapList) {
     items.push(...await getItemsOfSitemap(HOST, expressReq, sitemapList[i]));
