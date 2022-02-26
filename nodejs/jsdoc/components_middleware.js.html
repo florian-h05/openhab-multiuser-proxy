@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>components/items/security.js - Documentation</title>
+    <title>components/middleware.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,7 +34,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">components/items/security.js</h1>
+    <h1 class="page-title">components/middleware.js</h1>
     
 
     
@@ -44,75 +44,34 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import logger from './../../logger.js';
-import { findKeyInObj } from '../../utils.js';
-import sitemaps from '../sitemaps/backend.js';
+            <pre class="prettyprint source linenums"><code>import logger from './../logger.js';
 
-/**
- * Items security namespace. Provides security checks for Item access.
- *
- * @namespace itemsSecurity
- */
-
-/**
- * Get names of all Items in Sitemap.
- *
- * @memberof itemsSecurity
- * @private
- * @param {String} HOST hostname of openHAB server
- * @param {*} sitemapname Sitemap name
- * @returns {Array&lt;String>} names of all Items in Sitemap
- */
-const getItemsOfSitemap = async function (HOST, sitemapname) {
-  try {
-    const sitemap = await sitemaps.getSingle(HOST, sitemapname);
-    const items = findKeyInObj(sitemap.homepage.widgets, 'item').map(item => item.name);
-    logger.trace({ sitemap: sitemapname }, `Items: [${items}]`);
-    return items;
-  } catch (err) {
-    throw Error(err);
-  }
+export const requireHeader = (header) => {
+  return function (req, res, next) {
+    if (!req.headers[header.toLowerCase()]) {
+      res.status(400).send(`${header} is required!`);
+      logger.warn(`${req.ip} did not sent the required header ${header}`);
+      return;
+    } else {
+      for (const i in req.headers) {
+        req.headers[i] = req.headers[i].replace(/( )|(-)/g, '_');
+      }
+    }
+    next();
+  };
 };
 
 /**
- * Get names of all Items allowed for a client.
+ * Replace all spaces and hyphens with underscores in headers.
  *
- * @memberof itemsSecurity
- * @private
- * @param {String} HOST hostname of openHAB server
- * @param {String} user username
- * @param {Array&lt;String>} org array of organisations the user is member
- * @returns {Array&lt;String>} names of Items allowed for client
+ * @param {Array&lt;String>} headers headers to operate on
  */
-const getItemsForUser = async function (HOST, user, org) {
-  const sitemapList = await (await sitemaps.getAllFiltered(HOST, user, org)).map(sitemap => sitemap.name);
-  const items = [];
-  for (const i in sitemapList) {
-    items.push(...await getItemsOfSitemap(HOST, sitemapList[i]));
-  }
-  logger.debug({ user: user, orgs: org }, `Allowed Items: [${items}]`);
-  return items;
-};
-
-/**
- * Check whether Item access is allowed for client.
- *
- * @memberof itemsSecurity
- * @param {String} HOST hostname of openHAB server
- * @param {String} user username
- * @param {Array&lt;String>} org array of organisations the user is member
- * @param {String} itemname name of Item
- * @returns {Boolean} whether Item access is allowed or not
- */
-const itemAllowedForUser = async function (HOST, user, org, itemname) {
-  const items = await getItemsForUser(HOST, user, org);
-  const allowed = items.includes(itemname);
-  logger.info({ user: user, orgs: org }, `Access to ${itemname} allowed: ${allowed}`);
-  return allowed;
-};
-
-export default {
-  itemAllowedForUser: itemAllowedForUser
+export const replaceSpaceHyphenWithUnderscore = (headers) => {
+  return function (req, res, next) {
+    for (const i in headers) {
+      req.headers[headers[i].toLowerCase()] = req.headers[headers[i].toLowerCase()].replace(/( )|(-)/g, '_');
+    }
+  };
 };
 </code></pre>
         </article>
