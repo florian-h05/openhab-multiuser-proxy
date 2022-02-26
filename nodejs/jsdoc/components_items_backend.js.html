@@ -29,7 +29,7 @@
     
     <input type="text" id="nav-search" placeholder="Search" />
     
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='methods'><li data-type='method'><a href="itemsSecurity.html#.itemAllowedForUser">itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='methods'><li data-type='method'><a href="itemsSecurity.html#.itemAllowedForUser">itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -69,9 +69,36 @@ export const sendItemCommand = async function (HOST, expressReq, itemname, comma
   try {
     const status = await (await fetch(HOST + '/rest/items/' + itemname, { headers: headers, method: 'POST', body: command })).status;
     logger.debug(`sendItemCommand(): Sent command ${command} to ${HOST + '/rest/items/' + itemname}, HTTP response code ${status}`);
-    return await status;
+    return status;
   } catch (err) {
-    const error = new Error(`sendItemCommand(): An error occurred when sending command to ${HOST + '/rest/items/' + itemname}: ${err}`);
+    const error = new Error(`sendItemCommand(): An error occurred while sending command to ${HOST + '/rest/items/' + itemname}: ${err}`);
+    logger.error(error);
+    error();
+  }
+};
+
+/**
+ * Gets the state of an Item.
+ *
+ * @memberof itemsBackend
+ * @param {String} HOST hostname of openHAB server
+ * @param {*} expressReq request object from expressjs
+ * @param {String} itemname Item name
+ * @returns {Object} Object: { state: Item state, status: HTTP status }
+ */
+export const getItemState = async function (HOST, expressReq, itemname) {
+  const headers = await getHeaders(expressReq);
+  try {
+    const response = await fetch(HOST + '/rest/items/' + itemname + '/state', { headers: headers });
+    const state = await response.text();
+    const status = response.status;
+    logger.debug(`getItemState(): Got state ${state} from ${HOST + '/rest/items/' + itemname + '/state'}, HTTP response code ${status}`);
+    return {
+      state: state,
+      status: status
+    };
+  } catch (err) {
+    const error = new Error(`getItemState(): An error occurred while getting state from ${HOST + '/rest/items/' + itemname + '/state'}: ${err}`);
     logger.error(error);
     error();
   }
@@ -90,7 +117,7 @@ export const sendItemCommand = async function (HOST, expressReq, itemname, comma
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sat Feb 26 2022 20:09:30 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sat Feb 26 2022 20:28:31 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
