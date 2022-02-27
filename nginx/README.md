@@ -1,17 +1,17 @@
 # openHAB Multi-User support - NGINX part
 
 ## Table of Contents
-
-## Requirements
 - [Table of Contents](#table-of-contents)
 - [Requirements](#requirements)
   - [SSL certificates](#ssl-certificates)
   - [mTLS Certificate Authority](#mtls-certificate-authority)
 - [Setup](#setup)
 
+## Requirements
+
 ### SSL certificates
 
-In ``etc/ssl/``:
+In ``/etc/ssl/``:
 File | Description | ``chmod`` | ``chown``
 -|-|-|-
 ``openhab_rsa.crt`` | Server certificate | 644 | root:root
@@ -36,7 +36,7 @@ It is recommended to **NOT USE spaces and hyphens** to avoid problems.
 ## Setup
 
 Expecting that openHAB is available on http://localhost:8080 and the NodeJS app is available on http://localhost:8081, copy the following files:
-- [proxy-headers.conf](proxy-headers.conf) to ``etc/nginx/``
+- [proxy-headers.conf](proxy-headers.conf) to ``/etc/nginx/``
 - [openhab-multiuser.conf](openhab-multiuser.conf) ``/etc/nginx/sites-enabled/``
 
 Start NGINX:

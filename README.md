@@ -36,7 +36,7 @@ The npm package *openhab-multiuser-proxy* provides filters and access control me
 - ``sudo systemctl daemon-reload``
 - ``sudo systemctl enable --now openhab-multiuser.service``
   - The service by default tries to connect to localhost as openHAB server and exposes itself on port 8081.
-  - Logging is performed on level info to */var/log/openhab/multiuser-proxy.log* (JSON-formatted).
+  - Logging is performed on level info to ``/var/log/openhab/multiuser-proxy.log`` (JSON-formatted).
 - To change the configuration, edit the systemd file with ``sudo systemctl edit --full openhab-multiuser.service``
 
 ### Configuration options
@@ -65,6 +65,6 @@ Refer to [nginx/README](nginx/README.md).
 Use ufw to block direct access to openHAB & the NodeJS app:
 ```shell
 sudo ufw deny from any to any port 8080 comment "openHAB HTTP"
-sudo ufw deny from any to any port 8443 comment "openHAB HTPPS"
+sudo ufw deny from any to any port 8443 comment "openHAB HTTPS"
 sudo ufw deny from any to any port 8081 comment "openHAB Multi-User"
 ```
