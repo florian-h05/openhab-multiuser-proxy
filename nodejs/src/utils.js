@@ -21,7 +21,6 @@ export const findKeyInObj = function (obj, key) {
     for (const i in obj) {
       if (i === key) {
         values.push(obj[i]);
-        return;
       }
       if (typeof obj[i] === 'object') {
         iterator(obj[i], key);
