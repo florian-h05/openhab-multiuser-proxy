@@ -1,6 +1,8 @@
 // WARNING: Directly export all functions; DO NOT use export default = { key: function }
 // This approach does not work.
 
+import { backendInfo } from './server.js';
+
 /**
  * Utils namespace. Providing utility functions.
  *
@@ -32,7 +34,8 @@ export const findKeyInObj = function (obj, key) {
 };
 
 /**
- * Headers for backend requests using node-fetch.
+ * Set proxy headers for backend requests using node-fetch.
+ * If header is not present, use defaults.
  *
  * @memberof utils
  * @param {*} expressReq request object from expressjs
@@ -40,10 +43,10 @@ export const findKeyInObj = function (obj, key) {
  */
 export const getHeaders = function (expressReq) {
   return {
-    Host: expressReq.headers.host,
-    'X-Real-IP': expressReq.headers['x-real-ip'],
-    'X-Forwarded-For': expressReq.headers['x-forwarded-for'],
-    'X-Forwarded-Proto': expressReq.headers['x-forwarded-proto'],
+    Host: expressReq.headers.host || backendInfo.HOST,
+    'X-Real-IP': expressReq.headers['x-real-ip'] || backendInfo.HOST,
+    'X-Forwarded-For': expressReq.headers['x-forwarded-for'] || backendInfo.HOST,
+    'X-Forwarded-Proto': expressReq.headers['x-forwarded-proto'] || 'http',
     Connection: 'upgrade',
     Upgrade: expressReq.headers.Upgrade
   };
