@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import express from 'express';
-import helmet from 'helmet';
 import pino from 'pino-http';
 import logger from './logger.js';
 import swagger from './components/swagger.js';
@@ -36,14 +35,15 @@ const app = express();
 // Server setup.
 app.set('trust proxy', 'loopback');
 app.use(replaceSpaceHyphenWithUnderscore(['X-OPENHAB-USER', 'X-OPENHAB-ORG']));
-app.use(helmet()); // Helmet helps you secure your Express apps by setting various HTTP headers.
+app.disable('x-powered-by');
+app.disable('etag');
 app.use(express.json());
 app.use(express.text());
 app.use(pino({
   logger: logger,
   customLogLevel: function (res, err) {
     if (res.statusCode >= 400 && res.statusCode < 500) { // Client error
-      return 'warn';
+      return 'debug';
     } else if (res.statusCode >= 500 || err) { // Server error
       return 'error';
     } else if (res.statusCode >= 300 && res.statusCode < 400) { // Redirections

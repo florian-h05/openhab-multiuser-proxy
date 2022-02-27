@@ -38,7 +38,7 @@ export const sendItemCommand = async function (HOST, expressReq, itemname, comma
  * @param {String} HOST hostname of openHAB server
  * @param {*} expressReq request object from expressjs
  * @param {String} itemname Item name
- * @returns {Object} Object: { state: Item state, status: HTTP status }
+ * @returns {Object} Object: { state: Item state, status: HTTP status code }
  */
 export const getItemState = async function (HOST, expressReq, itemname) {
   const headers = await getHeaders(expressReq);

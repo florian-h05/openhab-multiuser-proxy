@@ -1,7 +1,8 @@
-import security from './security.js';
+import { itemAllowedForUser } from './security.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
 import { sendItemCommand, getItemState } from './backend.js';
+import logger from '../../logger.js';
 
 /**
  * Provide required /items routes.
@@ -10,6 +11,47 @@ import { sendItemCommand, getItemState } from './backend.js';
  * @param {*} app expressjs app
  */
 const items = (app) => {
+  /**
+   * @swagger
+   * /rest/items/{itemname}:
+   *   get:
+   *     summary: Gets a single Item.
+   *     parameters:
+   *       - in: path
+   *         name: itemname
+   *         required: true
+   *         description: Item name
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-USER
+   *         required: true
+   *         description: Name of user
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-ORG
+   *         required: false
+   *         description: Organisations the user is member of
+   *         schema:
+   *           type: array
+   *           items:
+   *             type: string
+   *         style: form
+   *         explode: true
+   *     responses:
+   *       200:
+   *         description: OK
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *       404:
+   *         description: Item not found
+   */
+
   /**
    * @swagger
    * /rest/items/{itemname}:
@@ -60,7 +102,7 @@ const items = (app) => {
     const user = req.headers['x-openhab-user'];
 
     try {
-      const allowed = await security.itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
+      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
       if (allowed) {
         const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
         res.status(status).send();
@@ -117,7 +159,7 @@ const items = (app) => {
     const user = req.headers['x-openhab-user'];
 
     try {
-      const allowed = await security.itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
+      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
       if (allowed) {
         const response = await getItemState(backendInfo.HOST, req, req.params.itemname);
         res.status(response.status).send(response.state);
@@ -131,18 +173,11 @@ const items = (app) => {
 
   /**
    * @swagger
-   * /rest/items/allowed/{itemname}:
+   * /auth/items:
    *   get:
-   *     summary: Whether Item access is allowed for client.
-   *     description: For usage with NGINX auth_request.
+   *     summary: Auth endpoint for Item access.
+   *     description: Used by NGINX auth_request.
    *     parameters:
-   *       - in: path
-   *         name: itemname
-   *         required: true
-   *         description: Item name
-   *         schema:
-   *           type: string
-   *         style: form
    *       - in: header
    *         name: X-OPENHAB-USER
    *         required: true
@@ -160,20 +195,34 @@ const items = (app) => {
    *             type: string
    *         style: form
    *         explode: true
+   *       - in: header
+   *         name: X-ORIGINAL-URI
+   *         required: true
+   *         description: Original request URI
+   *         schema:
+   *           type: string
+   *         style: form
    *     responses:
    *       200:
    *         description: Allowed
    *       403:
-   *         description: Forbidden
+   *         description: Forbidden.
    */
-  app.get('/rest/items/allowed/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
+  app.get('/auth/items', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
+    const itemname = req.headers['x-original-uri'].split('/')[3];
 
     try {
-      const allowed = await security.itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
-      (allowed) ? res.status(200).send('Allowed.') : res.status(403).send('Forbidden.');
-    } catch {
+      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, itemname);
+      if (allowed) {
+        logger.info(`/auth/items: Access to Item ${itemname} allowed for ${user}/[${org}]`);
+        res.status(200).send('Allowed.');
+      } else {
+        res.status(403).send();
+      }
+    } catch (err) {
+      logger.error(err);
       res.status(500).send('Internal server error.');
     }
   });

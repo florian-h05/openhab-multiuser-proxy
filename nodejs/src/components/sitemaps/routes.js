@@ -1,6 +1,22 @@
-import { getAllSitemapsFiltered, getSitemap } from './backend.js';
+import { getAllSitemapsFiltered } from './backend.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
+import proxy from 'express-http-proxy';
+import logger from '../../logger.js';
+
+const sitemapAccess = () => {
+  return function (req, res, next) {
+    const org = req.headers['x-openhab-org'] || [];
+    const user = req.headers['x-openhab-user'];
+    if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
+      const path = req.params.sitemapname + ((req.params.pageid) ? '/' + req.params.pageid : '');
+      logger.info(`Access to Sitemap ${path} allowed for ${user}/[${org}]`);
+      next();
+    } else {
+      res.status(403).send();
+    }
+  };
+};
 
 /**
  * Provides required /sitemaps routes.
@@ -56,6 +72,55 @@ const sitemaps = (app) => {
 
   /**
    * @swagger
+   * /auth/sitemaps:
+   *   get:
+   *     summary: Authorization endpoint for Sitemap access.
+   *     description: Used by nginx auth_request.
+   *     parameters:
+   *       - in: header
+   *         name: X-OPENHAB-USER
+   *         required: true
+   *         description: Name of user
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-ORG
+   *         required: false
+   *         description: Organisations the user is member of
+   *         schema:
+   *           type: array
+   *           items:
+   *             type: string
+   *         style: form
+   *         explode: true
+   *       - in: header
+   *         name: X-ORIGINAL-URI
+   *         required: true
+   *         description: Original request URI
+   *         schema:
+   *           type: string
+   *         style: form
+   *     responses:
+   *       200:
+   *         description: Allowed
+   *       403:
+   *         description: Forbidden.
+   */
+  app.get('/auth/sitemaps', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), (req, res, next) => {
+    const org = req.headers['x-openhab-org'] || [];
+    const user = req.headers['x-openhab-user'];
+    const sitemapname = req.headers['x-original-uri'].split('/')[3];
+    if (sitemapname === user || org.includes(sitemapname)) {
+      logger.info(`/auth/sitemaps: Access to Sitemap ${sitemapname} allowed for ${user}/[${org}]`);
+      res.status(200).send();
+    } else {
+      res.status(403).send();
+    }
+  });
+
+  /**
+   * @swagger
    * /rest/sitemaps/{sitemapname}:
    *   get:
    *     summary: Get sitemap by name.
@@ -92,21 +157,7 @@ const sitemaps = (app) => {
    *             schema:
    *               type: object
    */
-  app.get('/rest/sitemaps/:sitemapname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
-
-    if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
-      try {
-        const json = await getSitemap(backendInfo.HOST, req, req.params.sitemapname);
-        res.status(200).send(json);
-      } catch {
-        res.status(404).send();
-      }
-    } else {
-      res.status(404).send();
-    }
-  });
+  app.get('/rest/sitemaps/:sitemapname', requireHeader('X-OPENHAB-USER'), sitemapAccess(), proxy(backendInfo.HOST + '/rest/sitemaps'));
 
   /**
    * @swagger
@@ -153,21 +204,55 @@ const sitemaps = (app) => {
    *             schema:
    *               type: object
    */
-  app.get('/rest/sitemaps/:sitemapname/:pageid', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
+  app.get('/rest/sitemaps/:sitemapname/:pageid', requireHeader('X-OPENHAB-USER'), sitemapAccess(), proxy(backendInfo.HOST + '/rest/sitemaps/'));
 
-    if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
-      try {
-        const json = await getSitemap(backendInfo.HOST, req, req.params.sitemapname + '/' + req.params.pageid);
-        res.status(200).send(json);
-      } catch {
-        res.status(404).send();
-      }
-    } else {
-      res.status(404).send();
-    }
-  });
+  /**
+   * @swagger
+   * /rest/sitemaps/events/{subscriptionid}:
+   *   post:
+   *     summary: Get Sitemap events.
+   *     parameters:
+   *       - in: path
+   *         name: subscriptionid
+   *         required: true
+   *         description: subscription id
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: query
+   *         name: sitemap
+   *         required: false
+   *         description: Sitemap name
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: query
+   *         name: pageid
+   *         required: false
+   *         description: page id
+   *         schema:
+   *           type: string
+   *         style: form
+   *     responses:
+   *       200:
+   *         description: OK
+   *       400:
+   *         description: Page not linked to the subscription.
+   *       404:
+   *         description: Subscription not found.
+   */
+
+  /**
+   * @swagger
+   * /rest/sitemaps/events/subscribe:
+   *   post:
+   *     summary: Creates a Sitemap event subscription.
+   *     responses:
+   *       201:
+   *         description: Subscription created.
+   *       503:
+   *         description: Subscriptions limit reached.
+   */
 };
 
 export default sitemaps;

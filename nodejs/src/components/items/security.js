@@ -75,13 +75,9 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
  * @param {String} itemname name of Item
  * @returns {Boolean} whether Item access is allowed or not
  */
-const itemAllowedForUser = async function (HOST, expressReq, user, org, itemname) {
+export const itemAllowedForUser = async function (HOST, expressReq, user, org, itemname) {
   const items = await getItemsForUser(HOST, expressReq, user, org);
   const allowed = items.includes(itemname);
   logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed}`);
   return allowed;
-};
-
-export default {
-  itemAllowedForUser: itemAllowedForUser
 };
