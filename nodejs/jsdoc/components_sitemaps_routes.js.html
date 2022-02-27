@@ -29,7 +29,7 @@
     
     <input type="text" id="nav-search" placeholder="Search" />
     
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='methods'><li data-type='method'><a href="itemsSecurity.html#.itemAllowedForUser">itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='members'><li data-type='member'><a href="itemsSecurity.html#.exports.itemAllowedForUser">exports.itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -44,9 +44,25 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { getAllSitemapsFiltered, getSitemap } from './backend.js';
+            <pre class="prettyprint source linenums"><code>import { getAllSitemapsFiltered } from './backend.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
+import proxy from 'express-http-proxy';
+import logger from '../../logger.js';
+
+const sitemapAccess = () => {
+  return function (req, res, next) {
+    const org = req.headers['x-openhab-org'] || [];
+    const user = req.headers['x-openhab-user'];
+    if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
+      const path = req.params.sitemapname + ((req.params.pageid) ? '/' + req.params.pageid : '');
+      logger.info(`Access to Sitemap ${path} allowed for ${user}/[${org}]`);
+      next();
+    } else {
+      res.status(403).send();
+    }
+  };
+};
 
 /**
  * Provides required /sitemaps routes.
@@ -102,6 +118,55 @@ const sitemaps = (app) => {
 
   /**
    * @swagger
+   * /auth/sitemaps:
+   *   get:
+   *     summary: Authorization endpoint for Sitemap access.
+   *     description: Used by nginx auth_request.
+   *     parameters:
+   *       - in: header
+   *         name: X-OPENHAB-USER
+   *         required: true
+   *         description: Name of user
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-ORG
+   *         required: false
+   *         description: Organisations the user is member of
+   *         schema:
+   *           type: array
+   *           items:
+   *             type: string
+   *         style: form
+   *         explode: true
+   *       - in: header
+   *         name: X-ORIGINAL-URI
+   *         required: true
+   *         description: Original request URI
+   *         schema:
+   *           type: string
+   *         style: form
+   *     responses:
+   *       200:
+   *         description: Allowed
+   *       403:
+   *         description: Forbidden.
+   */
+  app.get('/auth/sitemaps', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), (req, res, next) => {
+    const org = req.headers['x-openhab-org'] || [];
+    const user = req.headers['x-openhab-user'];
+    const sitemapname = req.headers['x-original-uri'].split('/')[3];
+    if (sitemapname === user || org.includes(sitemapname)) {
+      logger.info(`/auth/sitemaps: Access to Sitemap ${sitemapname} allowed for ${user}/[${org}]`);
+      res.status(200).send();
+    } else {
+      res.status(403).send();
+    }
+  });
+
+  /**
+   * @swagger
    * /rest/sitemaps/{sitemapname}:
    *   get:
    *     summary: Get sitemap by name.
@@ -138,21 +203,7 @@ const sitemaps = (app) => {
    *             schema:
    *               type: object
    */
-  app.get('/rest/sitemaps/:sitemapname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
-
-    if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
-      try {
-        const json = await getSitemap(backendInfo.HOST, req, req.params.sitemapname);
-        res.status(200).send(json);
-      } catch {
-        res.status(404).send();
-      }
-    } else {
-      res.status(404).send();
-    }
-  });
+  app.get('/rest/sitemaps/:sitemapname', requireHeader('X-OPENHAB-USER'), sitemapAccess(), proxy(backendInfo.HOST + '/rest/sitemaps'));
 
   /**
    * @swagger
@@ -199,21 +250,55 @@ const sitemaps = (app) => {
    *             schema:
    *               type: object
    */
-  app.get('/rest/sitemaps/:sitemapname/:pageid', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
+  app.get('/rest/sitemaps/:sitemapname/:pageid', requireHeader('X-OPENHAB-USER'), sitemapAccess(), proxy(backendInfo.HOST + '/rest/sitemaps/'));
 
-    if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
-      try {
-        const json = await getSitemap(backendInfo.HOST, req, req.params.sitemapname + '/' + req.params.pageid);
-        res.status(200).send(json);
-      } catch {
-        res.status(404).send();
-      }
-    } else {
-      res.status(404).send();
-    }
-  });
+  /**
+   * @swagger
+   * /rest/sitemaps/events/{subscriptionid}:
+   *   post:
+   *     summary: Get Sitemap events.
+   *     parameters:
+   *       - in: path
+   *         name: subscriptionid
+   *         required: true
+   *         description: subscription id
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: query
+   *         name: sitemap
+   *         required: false
+   *         description: Sitemap name
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: query
+   *         name: pageid
+   *         required: false
+   *         description: page id
+   *         schema:
+   *           type: string
+   *         style: form
+   *     responses:
+   *       200:
+   *         description: OK
+   *       400:
+   *         description: Page not linked to the subscription.
+   *       404:
+   *         description: Subscription not found.
+   */
+
+  /**
+   * @swagger
+   * /rest/sitemaps/events/subscribe:
+   *   post:
+   *     summary: Creates a Sitemap event subscription.
+   *     responses:
+   *       201:
+   *         description: Subscription created.
+   *       503:
+   *         description: Subscriptions limit reached.
+   */
 };
 
 export default sitemaps;
@@ -231,7 +316,7 @@ export default sitemaps;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sat Feb 26 2022 20:28:31 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sun Feb 27 2022 12:37:15 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

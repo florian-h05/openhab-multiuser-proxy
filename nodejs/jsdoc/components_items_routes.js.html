@@ -29,7 +29,7 @@
     
     <input type="text" id="nav-search" placeholder="Search" />
     
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='methods'><li data-type='method'><a href="itemsSecurity.html#.itemAllowedForUser">itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='members'><li data-type='member'><a href="itemsSecurity.html#.exports.itemAllowedForUser">exports.itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -44,10 +44,11 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import security from './security.js';
+            <pre class="prettyprint source linenums"><code>import { itemAllowedForUser } from './security.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
 import { sendItemCommand, getItemState } from './backend.js';
+import logger from '../../logger.js';
 
 /**
  * Provide required /items routes.
@@ -56,6 +57,47 @@ import { sendItemCommand, getItemState } from './backend.js';
  * @param {*} app expressjs app
  */
 const items = (app) => {
+  /**
+   * @swagger
+   * /rest/items/{itemname}:
+   *   get:
+   *     summary: Gets a single Item.
+   *     parameters:
+   *       - in: path
+   *         name: itemname
+   *         required: true
+   *         description: Item name
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-USER
+   *         required: true
+   *         description: Name of user
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-ORG
+   *         required: false
+   *         description: Organisations the user is member of
+   *         schema:
+   *           type: array
+   *           items:
+   *             type: string
+   *         style: form
+   *         explode: true
+   *     responses:
+   *       200:
+   *         description: OK
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *       404:
+   *         description: Item not found
+   */
+
   /**
    * @swagger
    * /rest/items/{itemname}:
@@ -106,7 +148,7 @@ const items = (app) => {
     const user = req.headers['x-openhab-user'];
 
     try {
-      const allowed = await security.itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
+      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
       if (allowed) {
         const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
         res.status(status).send();
@@ -163,7 +205,7 @@ const items = (app) => {
     const user = req.headers['x-openhab-user'];
 
     try {
-      const allowed = await security.itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
+      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
       if (allowed) {
         const response = await getItemState(backendInfo.HOST, req, req.params.itemname);
         res.status(response.status).send(response.state);
@@ -177,18 +219,11 @@ const items = (app) => {
 
   /**
    * @swagger
-   * /rest/items/allowed/{itemname}:
+   * /auth/items:
    *   get:
-   *     summary: Whether Item access is allowed for client.
-   *     description: For usage with NGINX auth_request.
+   *     summary: Auth endpoint for Item access.
+   *     description: Used by NGINX auth_request.
    *     parameters:
-   *       - in: path
-   *         name: itemname
-   *         required: true
-   *         description: Item name
-   *         schema:
-   *           type: string
-   *         style: form
    *       - in: header
    *         name: X-OPENHAB-USER
    *         required: true
@@ -206,20 +241,34 @@ const items = (app) => {
    *             type: string
    *         style: form
    *         explode: true
+   *       - in: header
+   *         name: X-ORIGINAL-URI
+   *         required: true
+   *         description: Original request URI
+   *         schema:
+   *           type: string
+   *         style: form
    *     responses:
    *       200:
    *         description: Allowed
    *       403:
-   *         description: Forbidden
+   *         description: Forbidden.
    */
-  app.get('/rest/items/allowed/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
+  app.get('/auth/items', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
+    const itemname = req.headers['x-original-uri'].split('/')[3];
 
     try {
-      const allowed = await security.itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
-      (allowed) ? res.status(200).send('Allowed.') : res.status(403).send('Forbidden.');
-    } catch {
+      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, itemname);
+      if (allowed) {
+        logger.info(`/auth/items: Access to Item ${itemname} allowed for ${user}/[${org}]`);
+        res.status(200).send('Allowed.');
+      } else {
+        res.status(403).send();
+      }
+    } catch (err) {
+      logger.error(err);
       res.status(500).send('Internal server error.');
     }
   });
@@ -240,7 +289,7 @@ export default items;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sat Feb 26 2022 20:28:31 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sun Feb 27 2022 12:37:15 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
