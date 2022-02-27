@@ -57,3 +57,30 @@ export const getItemState = async function (HOST, expressReq, itemname) {
     error();
   }
 };
+
+/**
+ * Gets a single Item.
+ *
+ * @memberof itemsBackend
+ * @param {String} HOST hostname of openHAB server
+ * @param {*} expressReq request object from expressjs
+ * @param {String} itemname Item name
+ * @returns {Object} Object: { json: JSON reponse, status: HTTP status code }
+ */
+export const getItem = async function (HOST, expressReq, itemname) {
+  const headers = await getHeaders(expressReq);
+  try {
+    const response = await fetch(HOST + '/rest/items/' + itemname, { headers: headers });
+    const json = await response.json();
+    const status = response.status;
+    logger.debug(`getItem(): Got Item ${itemname} from ${HOST + '/rest/items/' + itemname}, HTTP response code ${status}`);
+    return {
+      json: json,
+      status: status
+    };
+  } catch (err) {
+    const error = new Error(`getItem(): An error occurred while getting Item from ${HOST + '/rest/items/' + itemname}: ${err}`);
+    logger.error(error);
+    error();
+  }
+};

@@ -7,7 +7,7 @@ const swaggerDefinition = {
   info: {
     title: 'openHAB Multiuser Proxy',
     description: 'Multi-User support for openHAB REST API with NGINX.',
-    version: '1.0.0',
+    version: '1.0.2',
     license: {
       name: 'GNU GPL-3.0',
       url: 'https://spdx.org/licenses/GPL-3.0-or-later.html'

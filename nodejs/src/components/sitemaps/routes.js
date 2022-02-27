@@ -105,7 +105,7 @@ const sitemaps = (app) => {
    *       200:
    *         description: Allowed
    *       403:
-   *         description: Forbidden.
+   *         description: Forbidden
    */
   app.get('/auth/sitemaps', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), (req, res, next) => {
     const org = req.headers['x-openhab-org'] || [];
@@ -210,7 +210,7 @@ const sitemaps = (app) => {
    * @swagger
    * /rest/sitemaps/events/{subscriptionid}:
    *   post:
-   *     summary: Get Sitemap events.
+   *     summary: Get Sitemap events. Requires nginx.
    *     parameters:
    *       - in: path
    *         name: subscriptionid
@@ -246,7 +246,7 @@ const sitemaps = (app) => {
    * @swagger
    * /rest/sitemaps/events/subscribe:
    *   post:
-   *     summary: Creates a Sitemap event subscription.
+   *     summary: Creates a Sitemap event subscription. Requires nginx.
    *     responses:
    *       201:
    *         description: Subscription created.

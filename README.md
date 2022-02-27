@@ -48,7 +48,6 @@ These options are all present in the systemd file, either as param in ``ExecStar
 JSDoc documentation is available at https://florian-h05.github.io/openhab-multiuser-proxy/nodejs/jsdoc/.
 
 REST API documentation is local available at the ``/swagger/`` path.
-Please be aware that access to all local endpoints requires the ``X-OPENHAB-USER`` header to be set.
 
 ## NGINX setup
 
