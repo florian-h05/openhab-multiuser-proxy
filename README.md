@@ -9,6 +9,8 @@ It is utilising a NodeJS application and the popular [NGINX](https://www.nginx.c
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
+- [Access to Sitemaps](#access-to-sitemaps)
+- [Access to Items](#access-to-items)
 - [NodeJS package](#nodejs-package)
   - [Installation](#installation)
   - [Configuration options](#configuration-options)
@@ -23,7 +25,31 @@ It relies on mTLS (client certificate auth) to get user id and org memberships.
 
 Each client has its own username (as *Common Name*) and can be in multiple organizations (as comma seperated list in *Organizational Unit*), for certificate config refer to [mTLS Certificate Authority](nginx/README.md#mtls-certificate-authority).
 
-openHAB Sitemaps must be named after an user or an org.
+## Access to Sitemaps
+
+A client can access a Sitemap if Sitemap name meets at least one of the following conditions:
+
+- exact match with the client's username
+- exact match with one of the client's organizations
+- Sitemap name includes one of the client's organizations at the beginning and before the `ORG_SEPARATOR` (default `_org_`)
+
+Example:
+
+A client with username *Florian* & organizations *family*, *administration* has access to:
+
+- a Sitemap named *Florian*
+- a Sitemap named *family* or *administration*
+- every Sitemap whose name starts with *familiy_org_* or *administration_org_*
+
+## Access to Items
+
+A client can access all Items that are members of his Sitemaps.
+
+Only the following Item operations are allowed:
+
+- Get a single Item.
+- Get the state of an Item.
+- Send a command to an Item.
 
 ## NodeJS package
 
@@ -46,9 +72,10 @@ Option | Description | Command line argument | Environment variable | Example | 
 `PORT` | Port to server the application. | -p, --port | PORT | --port=8081 | ``8081``
 `HOST` | URL for backend openHAB server. | -h, --host | HOST | --host=http://127.0.0.1:8080 | ``http://127.0.0.1:8080``
 `PINO_LOG_LEVEL` | Log level, available: fatal, error, warn, info, debug, trace | none | PINO_LOG_LEVEL | PINO_LOG_LEVEL=info | ``info``
-`PINO_LOG_FILE` | Log file. | none | PINO_LOG_FILE | ./log | none, outputs to console
+`PINO_LOG_FILE` | Log file path. | none | PINO_LOG_FILE | PINO_LOG_FILE=./pino.log | none, outputs to console
+`ORG_SEPARATOR` | Separates organization name at beginning of Sitemap name from the rest. | none | ORG_SEPARATOR | ORG_SEPARATOR=_org_ | ``_org_``
 
-These options are all present in the systemd file, either as param in ``ExecStart`` or as ``Environment`` variable.
+These options can be set in the systemd file, either as param in ``ExecStart`` or as ``Environment`` variable.
 
 ### Documentation
 

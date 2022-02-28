@@ -29,11 +29,16 @@ export default (app) => {
    */
   app.get('/', (req, res) => {
     res.send({
-      name: 'openHAB Multiuser Proxy - Supporting Logic',
-      description: process.env.npm_package_description,
+      name: process.env.npm_package_name,
+      description: 'Multi-User support for openHAB REST API with NGINX.',
+      purpose: 'This NodeJS application provides filters and access control mechanisms.',
       author: 'Florian Hotze',
       version: process.env.npm_package_version,
-      license: 'GNU GPL-3.0'
+      license: 'GNU GPL-3.0',
+      links: [
+        { type: 'swagger-doc', path: '/swagger/' },
+        { type: 'rest-api', path: '/rest' }
+      ]
     });
   });
 

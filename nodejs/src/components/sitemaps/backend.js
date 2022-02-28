@@ -2,6 +2,7 @@ import logger from './../../logger.js';
 import fetch from 'node-fetch';
 import { getHeaders, findKeyInObj } from '../../utils.js';
 import { sitemapsDb, sitemapListDb } from '../../db.js';
+import { sitemapAllowedForClient } from './security.js';
 
 /**
  * Sitemaps backend namespace. Providing access to the openHAB backend.
@@ -61,7 +62,7 @@ export const getAllSitemapsFiltered = async function (HOST, expressReq, user, or
     const json = await getAllSitemaps(HOST, expressReq);
     const sitemaps = [];
     for (const i in json) {
-      if (json[i].name === user || org.includes(json[i].name)) {
+      if (sitemapAllowedForClient(user, org, json[i].name)) {
         sitemaps.push(json[i]);
       }
     }

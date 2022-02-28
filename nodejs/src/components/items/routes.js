@@ -1,4 +1,4 @@
-import { itemAllowedForUser } from './security.js';
+import { itemAllowedForClient } from './security.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
 import { sendItemCommand, getItemState, getItem } from './backend.js';
@@ -54,7 +54,7 @@ const items = (app) => {
     const itemname = req.headers['x-original-uri'].split('/')[3];
 
     try {
-      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, itemname);
+      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, itemname);
       if (allowed) {
         logger.info(`/auth/items: Access to Item ${itemname} allowed for ${user}/[${org}]`);
         res.status(200).send();
@@ -112,7 +112,7 @@ const items = (app) => {
     const user = req.headers['x-openhab-user'];
 
     try {
-      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
+      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
       if (allowed) {
         const response = await getItem(backendInfo.HOST, req, req.params.itemname);
         res.status(response.status).send(response.json);
@@ -174,7 +174,7 @@ const items = (app) => {
     const user = req.headers['x-openhab-user'];
 
     try {
-      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
+      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
       if (allowed) {
         const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
         res.status(status).send();
@@ -231,7 +231,7 @@ const items = (app) => {
     const user = req.headers['x-openhab-user'];
 
     try {
-      const allowed = await itemAllowedForUser(backendInfo.HOST, req, user, org, req.params.itemname);
+      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
       if (allowed) {
         const response = await getItemState(backendInfo.HOST, req, req.params.itemname);
         res.status(response.status).send(response.state);

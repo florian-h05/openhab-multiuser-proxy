@@ -1,16 +1,15 @@
 import { getAllSitemapsFiltered } from './backend.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
+import { sitemapAllowedForClient } from './security.js';
 import proxy from 'express-http-proxy';
-import logger from '../../logger.js';
 
 const sitemapAccess = () => {
   return function (req, res, next) {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
-    if (req.params.sitemapname === user || org.includes(req.params.sitemapname)) {
-      const path = req.params.sitemapname + ((req.params.pageid) ? '/' + req.params.pageid : '');
-      logger.info(`Access to Sitemap ${path} allowed for ${user}/[${org}]`);
+    const allowed = sitemapAllowedForClient(user, org, req.params.sitemapname);
+    if (allowed) {
       next();
     } else {
       res.status(403).send();
@@ -111,8 +110,8 @@ const sitemaps = (app) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
     const sitemapname = req.headers['x-original-uri'].split('/')[3];
-    if (sitemapname === user || org.includes(sitemapname)) {
-      logger.info(`/auth/sitemaps: Access to Sitemap ${sitemapname} allowed for ${user}/[${org}]`);
+    const allowed = sitemapAllowedForClient(user, org, sitemapname);
+    if (allowed) {
       res.status(200).send();
     } else {
       res.status(403).send();
