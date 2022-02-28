@@ -43,7 +43,7 @@ app.use(pino({
   logger: logger,
   customLogLevel: function (res, err) {
     if (res.statusCode >= 400 && res.statusCode < 500) { // Client error
-      return 'debug';
+      return 'trace';
     } else if (res.statusCode >= 500 || err) { // Server error
       return 'error';
     } else if (res.statusCode >= 300 && res.statusCode < 400) { // Redirections

@@ -32,10 +32,10 @@ export const sitemapAllowedForClient = (user, org, sitemapname) => {
   const orgOfSitemap = (sitemapname.includes(ORG_SEPARATOR)) ? sitemapname.split(ORG_SEPARATOR)[0] : sitemapname;
   logger.debug(`sitemapAllowedForUser(): Organization of Sitemap ${sitemapname} is ${orgOfSitemap}`);
   if (sitemapname === user || org.includes(orgOfSitemap)) {
-    logger.info(`sitemapAllowedForUser(): Access to Sitemap/Page ${sitemapname} allowed for ${user}/[${org}]`);
+    logger.info({ user: user, orgs: org }, `sitemapAllowedForUser(): Access to Sitemap/Page ${sitemapname} allowed`);
     return true;
   } else {
-    logger.info(`sitemapAllowedForUser(): Access to Sitemap/Page ${sitemapname} forbidden for ${user}/[${org}]`);
+    logger.info({ user: user, orgs: org }, `sitemapAllowedForUser(): Access to Sitemap/Page ${sitemapname} forbidden`);
     return false;
   }
 };
