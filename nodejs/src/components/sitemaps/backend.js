@@ -1,7 +1,7 @@
 import logger from './../../logger.js';
 import fetch from 'node-fetch';
-import { getHeaders } from '../../utils.js';
-import { sitemapListDb } from '../../db.js';
+import { getHeaders, findKeyInObj } from '../../utils.js';
+import { sitemapsDb, sitemapListDb } from '../../db.js';
 
 /**
  * Sitemaps backend namespace. Providing access to the openHAB backend.
@@ -90,5 +90,38 @@ export const getSitemap = async function (HOST, expressReq, sitemapname) {
     const error = new Error(`getSitemap(): An error occurred when requesting backend ${HOST + '/rest/sitemaps/' + sitemapname}: ${err}`);
     logger.error(error);
     error();
+  }
+};
+
+/**
+ * Get names of all Items in Sitemap.
+ * Utilising LokiJS to cache the Items for up to two minutes for better performance.
+ *
+ * @memberof sitemapsBackend
+ * @param {String} HOST hostname of openHAB server
+ * @param {*} expressReq request object from expressjs
+ * @param {*} sitemapname Sitemap name
+ * @returns {Array<String>} names of all Items in Sitemap
+ */
+export const getItemsOfSitemap = async function (HOST, expressReq, sitemapname) {
+  const now = Date.now();
+  const itemsDb = sitemapsDb.findOne({ name: sitemapname });
+  if (itemsDb) {
+    if (now < itemsDb.lastupdate + 120000) {
+      // Currently stored version not older than 2 min.
+      logger.debug(`getItemsOfSitemap(): Items of Sitemap ${sitemapname} found in database and not older than 2 min.`);
+      return itemsDb.items;
+    }
+    sitemapsDb.findAndRemove({ name: sitemapname });
+  }
+
+  try {
+    const sitemap = await getSitemap(HOST, expressReq, sitemapname);
+    const items = findKeyInObj(sitemap.homepage.widgets, 'item').map(item => item.name);
+    sitemapsDb.insert({ name: sitemapname, lastupdate: now, items: items });
+    logger.debug({ sitemap: sitemapname }, `getItemOfSitemap(): Items of Sitemap ${sitemapname} fetched from backend`);
+    return items;
+  } catch (err) {
+    throw Error(err);
   }
 };

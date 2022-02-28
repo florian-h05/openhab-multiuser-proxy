@@ -1,47 +1,11 @@
 import logger from './../../logger.js';
-import { findKeyInObj } from '../../utils.js';
-import { getAllSitemapsFiltered, getSitemap } from '../sitemaps/backend.js';
-import { sitemapsDb } from '../../db.js';
+import { getAllSitemapsFiltered, getItemsOfSitemap } from '../sitemaps/backend.js';
 
 /**
  * Items security namespace. Provides security checks for Item access.
  *
  * @namespace itemsSecurity
  */
-
-/**
- * Get names of all Items in Sitemap.
- * Utilising LokiJS to cache the Items for up to two minutes for better performance.
- *
- * @memberof itemsSecurity
- * @private
- * @param {String} HOST hostname of openHAB server
- * @param {*} expressReq request object from expressjs
- * @param {*} sitemapname Sitemap name
- * @returns {Array<String>} names of all Items in Sitemap
- */
-const getItemsOfSitemap = async function (HOST, expressReq, sitemapname) {
-  const now = Date.now();
-  const itemsDb = sitemapsDb.findOne({ name: sitemapname });
-  if (itemsDb) {
-    if (now < itemsDb.lastupdate + 120000) {
-      // Currently stored version not older than 2 min.
-      logger.debug(`getItemsOfSitemap(): Items of Sitemap ${sitemapname} found in database and not older than 2 min.`);
-      return itemsDb.items;
-    }
-    sitemapsDb.findAndRemove({ name: sitemapname });
-  }
-
-  try {
-    const sitemap = await getSitemap(HOST, expressReq, sitemapname);
-    const items = findKeyInObj(sitemap.homepage.widgets, 'item').map(item => item.name);
-    sitemapsDb.insert({ name: sitemapname, lastupdate: now, items: items });
-    logger.debug({ sitemap: sitemapname }, `getItemOfSitemap(): Items of Sitemap ${sitemapname} fetched from backend`);
-    return items;
-  } catch (err) {
-    throw Error(err);
-  }
-};
 
 /**
  * Get names of all Items allowed for a client.
@@ -51,7 +15,7 @@ const getItemsOfSitemap = async function (HOST, expressReq, sitemapname) {
  * @param {String} HOST hostname of openHAB server
  * @param {*} expressReq request object from expressjs
  * @param {String} user username
- * @param {Array<String>} org array of organisations the user is member
+ * @param {Array<String>} org array of organizations the user is member
  * @returns {Array<String>} names of Items allowed for client
  */
 const getItemsForUser = async function (HOST, expressReq, user, org) {
@@ -71,11 +35,11 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
  * @param {String} HOST hostname of openHAB server
  * @param {*} expressReq request object from expressjs
  * @param {String} user username
- * @param {Array<String>} org array of organisations the user is member
+ * @param {Array<String>} org array of organizations the user is member
  * @param {String} itemname name of Item
  * @returns {Boolean} whether Item access is allowed or not
  */
-export const itemAllowedForUser = async function (HOST, expressReq, user, org, itemname) {
+export const itemAllowedForClient = async function (HOST, expressReq, user, org, itemname) {
   const items = await getItemsForUser(HOST, expressReq, user, org);
   const allowed = items.includes(itemname);
   logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed}`);
