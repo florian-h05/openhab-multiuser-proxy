@@ -51,7 +51,8 @@ const items = (app) => {
   app.get('/auth/items', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), async (req, res) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
-    const itemname = req.headers['x-original-uri'].split('/')[3];
+    const regex = /\/items\/([a-zA-Z_0-9]+)/;
+    const itemname = regex.exec(req.headers['x-original-uri'])[1];
 
     try {
       const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, itemname);

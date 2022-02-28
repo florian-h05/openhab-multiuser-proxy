@@ -109,7 +109,8 @@ const sitemaps = (app) => {
   app.get('/auth/sitemaps', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), (req, res, next) => {
     const org = req.headers['x-openhab-org'] || [];
     const user = req.headers['x-openhab-user'];
-    const sitemapname = req.headers['x-original-uri'].split('/')[3];
+    const regex = /\/(sitemaps|page)\/([a-zA-Z_0-9]+)/;
+    const sitemapname = regex.exec(req.headers['x-original-uri'])[2];
     const allowed = sitemapAllowedForClient(user, org, sitemapname);
     if (allowed) {
       res.status(200).send();

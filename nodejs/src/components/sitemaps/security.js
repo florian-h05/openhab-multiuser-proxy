@@ -15,6 +15,7 @@ dotenv.config();
  * @memberof sitemapsSecurity
  */
 const ORG_SEPARATOR = process.env.ORG_SEPARATOR || '_org_';
+logger.debug(`Organization separator is ${ORG_SEPARATOR}`);
 
 /**
  * Check whether Sitemap access is allowed for client.
@@ -29,12 +30,12 @@ export const sitemapAllowedForClient = (user, org, sitemapname) => {
   org = new Array(org);
   // If Sitemap name includes ORG_SEPARATOR, return string before ORG_SEPARATOR, else return Sitemap name.
   const orgOfSitemap = (sitemapname.includes(ORG_SEPARATOR)) ? sitemapname.split(ORG_SEPARATOR)[0] : sitemapname;
-  logger.debug(`sitemapAllowedForUser(): Organization of Sitemapp ${sitemapname} is ${orgOfSitemap}`);
+  logger.debug(`sitemapAllowedForUser(): Organization of Sitemap ${sitemapname} is ${orgOfSitemap}`);
   if (sitemapname === user || org.includes(orgOfSitemap)) {
-    logger.info(`sitemapAllowedForUser(): Access to Sitemapp ${sitemapname} allowed for ${user}/[${org}]`);
+    logger.info(`sitemapAllowedForUser(): Access to Sitemap/Page ${sitemapname} allowed for ${user}/[${org}]`);
     return true;
   } else {
-    logger.info(`sitemapAllowedForUser(): Access to Sitemapp ${sitemapname} forbidden for ${user}/[${org}]`);
+    logger.info(`sitemapAllowedForUser(): Access to Sitemap/Page ${sitemapname} forbidden for ${user}/[${org}]`);
     return false;
   }
 };
