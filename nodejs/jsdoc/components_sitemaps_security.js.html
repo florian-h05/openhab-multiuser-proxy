@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>components/items/security.js - Documentation</title>
+    <title>components/sitemaps/security.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,7 +34,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">components/items/security.js</h1>
+    <h1 class="page-title">components/sitemaps/security.js</h1>
     
 
     
@@ -44,52 +44,45 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import logger from './../../logger.js';
-import { getAllSitemapsFiltered, getItemsOfSitemap } from '../sitemaps/backend.js';
+            <pre class="prettyprint source linenums"><code>import * as dotenv from 'dotenv';
+import logger from './../../logger.js';
+
+dotenv.config();
 
 /**
  * Items security namespace. Provides security checks for Item access.
  *
- * @namespace itemsSecurity
+ * @namespace sitemapsSecurity
  */
 
 /**
- * Get names of all Items allowed for a client.
+ * Separates the organization name at beginning of Sitemap name from the full name.
  *
- * @memberof itemsSecurity
- * @private
- * @param {String} HOST hostname of openHAB server
- * @param {*} expressReq request object from expressjs
+ * @memberof sitemapsSecurity
+ */
+const ORG_SEPARATOR = process.env.ORG_SEPARATOR || '_org_';
+
+/**
+ * Check whether Sitemap access is allowed for client.
+ *
+ * @memberof sitemapsSecurity
  * @param {String} user username
  * @param {Array&lt;String>} org array of organizations the user is member
- * @returns {Array&lt;String>} names of Items allowed for client
+ * @param {String} sitemapname name of Sitemap
+ * @returns {Boolean} whether Sitemap access is allowed or not
  */
-const getItemsForUser = async function (HOST, expressReq, user, org) {
-  const sitemapList = await (await getAllSitemapsFiltered(HOST, expressReq, user, org)).map(sitemap => sitemap.name);
-  const items = [];
-  for (const i in sitemapList) {
-    items.push(...await getItemsOfSitemap(HOST, expressReq, sitemapList[i]));
+export const sitemapAllowedForClient = (user, org, sitemapname) => {
+  org = new Array(org);
+  // If Sitemap name includes ORG_SEPARATOR, return string before ORG_SEPARATOR, else return Sitemap name.
+  const orgOfSitemap = (sitemapname.includes(ORG_SEPARATOR)) ? sitemapname.split(ORG_SEPARATOR)[0] : sitemapname;
+  logger.debug(`sitemapAllowedForUser(): Organization of Sitemapp ${sitemapname} is ${orgOfSitemap}`);
+  if (sitemapname === user || org.includes(orgOfSitemap)) {
+    logger.info(`sitemapAllowedForUser(): Access to Sitemapp ${sitemapname} allowed for ${user}/[${org}]`);
+    return true;
+  } else {
+    logger.info(`sitemapAllowedForUser(): Access to Sitemapp ${sitemapname} forbidden for ${user}/[${org}]`);
+    return false;
   }
-  logger.debug({ user: user, orgs: org }, `getItemsForUser(): Allowed Items: [${items}]`);
-  return items;
-};
-
-/**
- * Check whether Item access is allowed for client.
- *
- * @memberof itemsSecurity
- * @param {String} HOST hostname of openHAB server
- * @param {*} expressReq request object from expressjs
- * @param {String} user username
- * @param {Array&lt;String>} org array of organizations the user is member
- * @param {String} itemname name of Item
- * @returns {Boolean} whether Item access is allowed or not
- */
-export const itemAllowedForClient = async function (HOST, expressReq, user, org, itemname) {
-  const items = await getItemsForUser(HOST, expressReq, user, org);
-  const allowed = items.includes(itemname);
-  logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed}`);
-  return allowed;
 };
 </code></pre>
         </article>

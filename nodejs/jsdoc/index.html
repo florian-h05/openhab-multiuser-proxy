@@ -29,7 +29,7 @@
     
     <input type="text" id="nav-search" placeholder="Search" />
     
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItem">exports.getItem</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='members'><li data-type='member'><a href="itemsSecurity.html#.exports.itemAllowedForUser">exports.itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItem">exports.getItem</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='members'><li data-type='member'><a href="itemsSecurity.html#.exports.itemAllowedForClient">exports.itemAllowedForClient</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getItemsOfSitemap">exports.getItemsOfSitemap</a></li></ul></li><li><a href="sitemapsSecurity.html">sitemapsSecurity</a><ul class='members'><li data-type='member'><a href="sitemapsSecurity.html#.ORG_SEPARATOR">ORG_SEPARATOR</a></li><li data-type='member'><a href="sitemapsSecurity.html#.exports.sitemapAllowedForClient">exports.sitemapAllowedForClient</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -68,6 +68,8 @@ It is utilising a NodeJS application and the popular <a href="https://www.nginx.
 <ul>
 <li><a href="#table-of-contents">Table of Contents</a></li>
 <li><a href="#introduction">Introduction</a></li>
+<li><a href="#access-to-sitemaps">Access to Sitemaps</a></li>
+<li><a href="#access-to-items">Access to Items</a></li>
 <li><a href="#nodejs-package">NodeJS package</a>
 <ul>
 <li><a href="#installation">Installation</a></li>
@@ -82,7 +84,28 @@ It is utilising a NodeJS application and the popular <a href="https://www.nginx.
 <p>This project currently allows multiple users to access different Sitemaps with the openHAB mobile app.
 It relies on mTLS (client certificate auth) to get user id and org memberships.</p>
 <p>Each client has its own username (as <em>Common Name</em>) and can be in multiple organizations (as comma seperated list in <em>Organizational Unit</em>), for certificate config refer to <a href="nginx/README.md#mtls-certificate-authority">mTLS Certificate Authority</a>.</p>
-<p>openHAB Sitemaps must be named after an user or an org.</p>
+<h2>Access to Sitemaps</h2>
+<p>A client can access a Sitemap if Sitemap name meets at least one of the following conditions:</p>
+<ul>
+<li>exact match with the client's username</li>
+<li>exact match with one of the client's organizations</li>
+<li>Sitemap name includes one of the client's organizations at the beginning and before the <code>ORG_SEPARATOR</code> (default <code>_org_</code>)</li>
+</ul>
+<p>Example:</p>
+<p>A client with username <em>Florian</em> &amp; organizations <em>family</em>, <em>administration</em> has access to:</p>
+<ul>
+<li>a Sitemap named <em>Florian</em></li>
+<li>a Sitemap named <em>family</em> or <em>administration</em></li>
+<li>every Sitemap whose name starts with <em>familiy_org_</em> or <em>administration_org_</em></li>
+</ul>
+<h2>Access to Items</h2>
+<p>A client can access all Items that are members of his Sitemaps.</p>
+<p>Only the following Item operations are allowed:</p>
+<ul>
+<li>Get a single Item.</li>
+<li>Get the state of an Item.</li>
+<li>Send a command to an Item.</li>
+</ul>
 <h2>NodeJS package</h2>
 <p>The npm package <em>openhab-multiuser-proxy</em> provides filters and access control mechanisms.
 <strong>It depends on NGINX (or Apache) as reverse proxy.</strong></p>
@@ -138,15 +161,23 @@ It relies on mTLS (client certificate auth) to get user id and org memberships.<
 </tr>
 <tr>
 <td><code>PINO_LOG_FILE</code></td>
-<td>Log file.</td>
+<td>Log file path.</td>
 <td>none</td>
 <td>PINO_LOG_FILE</td>
-<td>./log</td>
+<td>PINO_LOG_FILE=./pino.log</td>
 <td>none, outputs to console</td>
+</tr>
+<tr>
+<td><code>ORG_SEPARATOR</code></td>
+<td>Separates organization name at beginning of Sitemap name from the rest.</td>
+<td>none</td>
+<td>ORG_SEPARATOR</td>
+<td>ORG_SEPARATOR=<em>org</em></td>
+<td><code>_org_</code></td>
 </tr>
 </tbody>
 </table>
-<p>These options are all present in the systemd file, either as param in <code>ExecStart</code> or as <code>Environment</code> variable.</p>
+<p>These options can be set in the systemd file, either as param in <code>ExecStart</code> or as <code>Environment</code> variable.</p>
 <h3>Documentation</h3>
 <p>JSDoc documentation is available at https://florian-h05.github.io/openhab-multiuser-proxy/nodejs/jsdoc/.</p>
 <p>REST API documentation is local available at the <code>/swagger/</code> path.</p>
@@ -172,7 +203,7 @@ sudo ufw deny from any to any port 8081 comment &quot;openHAB Multi-User&quot;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Feb 28 2022 12:04:01 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Feb 28 2022 13:56:38 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>components/items/security.js - Documentation</title>
+    <title>sitemapsSecurity - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,66 +34,235 @@
 
 <div id="main">
     
-    <h1 class="page-title">components/items/security.js</h1>
+    <h1 class="page-title">sitemapsSecurity</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import logger from './../../logger.js';
-import { getAllSitemapsFiltered, getItemsOfSitemap } from '../sitemaps/backend.js';
+        <h2>
+        sitemapsSecurity
+        </h2>
+        
+    
+</header>
 
-/**
- * Items security namespace. Provides security checks for Item access.
- *
- * @namespace itemsSecurity
- */
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-/**
- * Get names of all Items allowed for a client.
- *
- * @memberof itemsSecurity
- * @private
- * @param {String} HOST hostname of openHAB server
- * @param {*} expressReq request object from expressjs
- * @param {String} user username
- * @param {Array&lt;String>} org array of organizations the user is member
- * @returns {Array&lt;String>} names of Items allowed for client
- */
-const getItemsForUser = async function (HOST, expressReq, user, org) {
-  const sitemapList = await (await getAllSitemapsFiltered(HOST, expressReq, user, org)).map(sitemap => sitemap.name);
-  const items = [];
-  for (const i in sitemapList) {
-    items.push(...await getItemsOfSitemap(HOST, expressReq, sitemapList[i]));
-  }
-  logger.debug({ user: user, orgs: org }, `getItemsForUser(): Allowed Items: [${items}]`);
-  return items;
-};
+<dl class="details">
 
-/**
- * Check whether Item access is allowed for client.
- *
- * @memberof itemsSecurity
- * @param {String} HOST hostname of openHAB server
- * @param {*} expressReq request object from expressjs
- * @param {String} user username
- * @param {Array&lt;String>} org array of organizations the user is member
- * @param {String} itemname name of Item
- * @returns {Boolean} whether Item access is allowed or not
- */
-export const itemAllowedForClient = async function (HOST, expressReq, user, org, itemname) {
-  const items = await getItemsForUser(HOST, expressReq, user, org);
-  const allowed = items.includes(itemname);
-  logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed}`);
-  return allowed;
-};
-</code></pre>
-        </article>
-    </section>
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_sitemaps_security.js.html">components/sitemaps/security.js</a>, <a href="components_sitemaps_security.js.html#line6">line 6</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+            
+                <div class="description usertext"><p>Items security namespace. Provides security checks for Item access.</p></div>
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".ORG_SEPARATOR"><span class="type-signature">(static, constant) </span>ORG_SEPARATOR<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_sitemaps_security.js.html">components/sitemaps/security.js</a>, <a href="components_sitemaps_security.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Separates the organization name at beginning of Sitemap name from the full name.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".exports.sitemapAllowedForClient"><span class="type-signature">(static, constant) </span>exports.sitemapAllowedForClient<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_sitemaps_security.js.html">components/sitemaps/security.js</a>, <a href="components_sitemaps_security.js.html#line28">line 28</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Check whether Sitemap access is allowed for client.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

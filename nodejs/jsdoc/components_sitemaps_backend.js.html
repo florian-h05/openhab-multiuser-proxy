@@ -29,7 +29,7 @@
     
     <input type="text" id="nav-search" placeholder="Search" />
     
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItem">exports.getItem</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='members'><li data-type='member'><a href="itemsSecurity.html#.exports.itemAllowedForUser">exports.itemAllowedForUser</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItem">exports.getItem</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='members'><li data-type='member'><a href="itemsSecurity.html#.exports.itemAllowedForClient">exports.itemAllowedForClient</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getItemsOfSitemap">exports.getItemsOfSitemap</a></li></ul></li><li><a href="sitemapsSecurity.html">sitemapsSecurity</a><ul class='members'><li data-type='member'><a href="sitemapsSecurity.html#.ORG_SEPARATOR">ORG_SEPARATOR</a></li><li data-type='member'><a href="sitemapsSecurity.html#.exports.sitemapAllowedForClient">exports.sitemapAllowedForClient</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -46,8 +46,9 @@
         <article>
             <pre class="prettyprint source linenums"><code>import logger from './../../logger.js';
 import fetch from 'node-fetch';
-import { getHeaders } from '../../utils.js';
-import { sitemapListDb } from '../../db.js';
+import { getHeaders, findKeyInObj } from '../../utils.js';
+import { sitemapsDb, sitemapListDb } from '../../db.js';
+import { sitemapAllowedForClient } from './security.js';
 
 /**
  * Sitemaps backend namespace. Providing access to the openHAB backend.
@@ -107,7 +108,7 @@ export const getAllSitemapsFiltered = async function (HOST, expressReq, user, or
     const json = await getAllSitemaps(HOST, expressReq);
     const sitemaps = [];
     for (const i in json) {
-      if (json[i].name === user || org.includes(json[i].name)) {
+      if (sitemapAllowedForClient(user, org, json[i].name)) {
         sitemaps.push(json[i]);
       }
     }
@@ -138,6 +139,39 @@ export const getSitemap = async function (HOST, expressReq, sitemapname) {
     error();
   }
 };
+
+/**
+ * Get names of all Items in Sitemap.
+ * Utilising LokiJS to cache the Items for up to two minutes for better performance.
+ *
+ * @memberof sitemapsBackend
+ * @param {String} HOST hostname of openHAB server
+ * @param {*} expressReq request object from expressjs
+ * @param {*} sitemapname Sitemap name
+ * @returns {Array&lt;String>} names of all Items in Sitemap
+ */
+export const getItemsOfSitemap = async function (HOST, expressReq, sitemapname) {
+  const now = Date.now();
+  const itemsDb = sitemapsDb.findOne({ name: sitemapname });
+  if (itemsDb) {
+    if (now &lt; itemsDb.lastupdate + 120000) {
+      // Currently stored version not older than 2 min.
+      logger.debug(`getItemsOfSitemap(): Items of Sitemap ${sitemapname} found in database and not older than 2 min.`);
+      return itemsDb.items;
+    }
+    sitemapsDb.findAndRemove({ name: sitemapname });
+  }
+
+  try {
+    const sitemap = await getSitemap(HOST, expressReq, sitemapname);
+    const items = findKeyInObj(sitemap.homepage.widgets, 'item').map(item => item.name);
+    sitemapsDb.insert({ name: sitemapname, lastupdate: now, items: items });
+    logger.debug({ sitemap: sitemapname }, `getItemOfSitemap(): Items of Sitemap ${sitemapname} fetched from backend`);
+    return items;
+  } catch (err) {
+    throw Error(err);
+  }
+};
 </code></pre>
         </article>
     </section>
@@ -152,7 +186,7 @@ export const getSitemap = async function (HOST, expressReq, sitemapname) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Feb 28 2022 12:04:01 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Feb 28 2022 13:56:38 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
