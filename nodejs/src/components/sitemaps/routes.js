@@ -5,14 +5,18 @@ import { sitemapAllowedForClient } from './security.js';
 import proxy from 'express-http-proxy';
 
 const sitemapAccess = () => {
-  return function (req, res, next) {
-    const org = req.headers['x-openhab-org'] || [];
+  return async function (req, res, next) {
+    const org = req.headers['x-openhab-org'] || '';
     const user = req.headers['x-openhab-user'];
-    const allowed = sitemapAllowedForClient(user, org, req.params.sitemapname);
-    if (allowed) {
-      next();
-    } else {
-      res.status(403).send();
+    try {
+      const allowed = await sitemapAllowedForClient(user, org, req.params.sitemapname);
+      if (allowed === true) {
+        next();
+      } else {
+        res.status(403).send();
+      }
+    } catch {
+      res.status(500).send();
     }
   };
 };
@@ -42,11 +46,8 @@ const sitemaps = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     responses:
    *       200:
    *         description: OK
@@ -58,7 +59,7 @@ const sitemaps = (app) => {
    *                 type: object
    */
   app.get('/rest/sitemaps', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
+    const org = req.headers['x-openhab-org'] || '';
     const user = req.headers['x-openhab-user'];
 
     try {
@@ -88,11 +89,8 @@ const sitemaps = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *       - in: header
    *         name: X-ORIGINAL-URI
    *         required: true
@@ -107,15 +105,20 @@ const sitemaps = (app) => {
    *         description: Forbidden
    */
   app.get('/auth/sitemaps', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), (req, res, next) => {
-    const org = req.headers['x-openhab-org'] || [];
+    const org = req.headers['x-openhab-org'] || '';
     const user = req.headers['x-openhab-user'];
     const regex = /\/(sitemaps|page)\/([a-zA-Z_0-9]+)/;
-    const sitemapname = regex.exec(req.headers['x-original-uri'])[2];
-    const allowed = sitemapAllowedForClient(user, org, sitemapname);
-    if (allowed) {
-      res.status(200).send();
-    } else {
-      res.status(403).send();
+    const sitemapname = regex.exec(req.headers['x-original-uri']);
+    if (sitemapname == null) return res.status(403).send();
+    try {
+      const allowed = sitemapAllowedForClient(user, org, sitemapname[2]);
+      if (allowed === true) {
+        res.status(200).send();
+      } else {
+        res.status(403).send();
+      }
+    } catch (err) {
+      res.status(500).send();
     }
   });
 
@@ -144,11 +147,8 @@ const sitemaps = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     responses:
    *       200:
    *         description: OK
@@ -191,11 +191,8 @@ const sitemaps = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     responses:
    *       200:
    *         description: OK

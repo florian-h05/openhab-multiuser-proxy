@@ -2,7 +2,23 @@ import { itemAllowedForClient } from './security.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
 import { sendItemCommand, getItemState, getItem } from './backend.js';
-import logger from '../../logger.js';
+
+const itemAccess = () => {
+  return async function (req, res, next) {
+    const org = req.headers['x-openhab-org'] || '';
+    const user = req.headers['x-openhab-user'];
+    try {
+      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
+      if (allowed === true) {
+        next();
+      } else {
+        res.status(403).send();
+      }
+    } catch {
+      res.status(500).send();
+    }
+  };
+};
 
 /**
  * Provide required /items routes.
@@ -30,11 +46,8 @@ const items = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *       - in: header
    *         name: X-ORIGINAL-URI
    *         required: true
@@ -49,22 +62,20 @@ const items = (app) => {
    *         description: Forbidden
    */
   app.get('/auth/items', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
+    const org = req.headers['x-openhab-org'] || '';
     const user = req.headers['x-openhab-user'];
     const regex = /\/items\/([a-zA-Z_0-9]+)/;
-    const itemname = regex.exec(req.headers['x-original-uri'])[1];
-
+    const itemname = regex.exec(req.headers['x-original-uri']);
+    if (itemname == null) return res.status(403).send();
     try {
-      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, itemname);
-      if (allowed) {
-        logger.info(`/auth/items: Access to Item ${itemname} allowed for ${user}/[${org}]`);
+      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, itemname[1]);
+      if (allowed === true) {
         res.status(200).send();
       } else {
         res.status(403).send();
       }
-    } catch (err) {
-      logger.error(err);
-      res.status(500).send('Internal server error.');
+    } catch {
+      res.status(500).send();
     }
   });
 
@@ -93,11 +104,8 @@ const items = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     responses:
    *       200:
    *         description: OK
@@ -108,21 +116,9 @@ const items = (app) => {
    *       404:
    *         description: Item not found
    */
-  app.get('/rest/items/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
-
-    try {
-      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
-      if (allowed) {
-        const response = await getItem(backendInfo.HOST, req, req.params.itemname);
-        res.status(response.status).send(response.json);
-      } else {
-        res.status(404).send();
-      }
-    } catch {
-      res.status(500).send('Internal server error.');
-    }
+  app.get('/rest/items/:itemname', requireHeader('X-OPENHAB-USER'), itemAccess(), async (req, res) => {
+    const response = await getItem(backendInfo.HOST, req, req.params.itemname);
+    res.status(response.status).send(response.json);
   });
 
   /**
@@ -150,11 +146,8 @@ const items = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     requestBody:
    *       description: valid item command (e.g. ON, OFF, UP, DOWN, REFRESH)
    *       required: true
@@ -170,21 +163,9 @@ const items = (app) => {
    *       404:
    *         description: Item not found
    */
-  app.post('/rest/items/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
-
-    try {
-      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
-      if (allowed) {
-        const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
-        res.status(status).send();
-      } else {
-        res.status(404).send();
-      }
-    } catch {
-      res.status(500).send('Internal server error.');
-    }
+  app.post('/rest/items/:itemname', requireHeader('X-OPENHAB-USER'), itemAccess(), async (req, res) => {
+    const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
+    res.status(status).send();
   });
 
   /**
@@ -212,11 +193,8 @@ const items = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     responses:
    *       200:
    *         description: OK
@@ -227,21 +205,9 @@ const items = (app) => {
    *       404:
    *         description: Item not found
    */
-  app.get('/rest/items/:itemname/state', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
-
-    try {
-      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
-      if (allowed) {
-        const response = await getItemState(backendInfo.HOST, req, req.params.itemname);
-        res.status(response.status).send(response.state);
-      } else {
-        res.status(404).send();
-      }
-    } catch {
-      res.status(500).send('Internal server error.');
-    }
+  app.get('/rest/items/:itemname/state', requireHeader('X-OPENHAB-USER'), itemAccess(), async (req, res) => {
+    const response = await getItemState(backendInfo.HOST, req, req.params.itemname);
+    res.status(response.status).send(response.state);
   });
 };
 
