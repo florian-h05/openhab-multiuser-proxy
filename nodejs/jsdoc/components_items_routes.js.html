@@ -29,7 +29,7 @@
     
     <input type="text" id="nav-search" placeholder="Search" />
     
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItem">exports.getItem</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='members'><li data-type='member'><a href="itemsSecurity.html#.exports.itemAllowedForClient">exports.itemAllowedForClient</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getItemsOfSitemap">exports.getItemsOfSitemap</a></li></ul></li><li><a href="sitemapsSecurity.html">sitemapsSecurity</a><ul class='members'><li data-type='member'><a href="sitemapsSecurity.html#.ORG_SEPARATOR">ORG_SEPARATOR</a></li><li data-type='member'><a href="sitemapsSecurity.html#.exports.sitemapAllowedForClient">exports.sitemapAllowedForClient</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="itemsBackend.html">itemsBackend</a><ul class='members'><li data-type='member'><a href="itemsBackend.html#.exports.sendItemCommand">exports.sendItemCommand</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItemState">exports.getItemState</a></li><li data-type='member'><a href="itemsBackend.html#.exports.getItem">exports.getItem</a></li></ul></li><li><a href="itemsSecurity.html">itemsSecurity</a><ul class='members'><li data-type='member'><a href="itemsSecurity.html#.exports.itemAllowedForClient">exports.itemAllowedForClient</a></li></ul></li><li><a href="middlewares.html">middlewares</a><ul class='members'><li data-type='member'><a href="middlewares.html#.exports.requireHeader">exports.requireHeader</a></li><li data-type='member'><a href="middlewares.html#.exports.replaceSpaceHyphenWithUnderscore">exports.replaceSpaceHyphenWithUnderscore</a></li><li data-type='member'><a href="middlewares.html#.exports.formatOrgs">exports.formatOrgs</a></li></ul></li><li><a href="routes.html">routes</a><ul class='methods'><li data-type='method'><a href="routes.html#.items">items</a></li><li data-type='method'><a href="routes.html#.module.exports">module.exports</a></li><li data-type='method'><a href="routes.html#.sitemaps">sitemaps</a></li></ul></li><li><a href="sitemapsBackend.html">sitemapsBackend</a><ul class='members'><li data-type='member'><a href="sitemapsBackend.html#.exports.getAllSitemapsFiltered">exports.getAllSitemapsFiltered</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getSitemap">exports.getSitemap</a></li><li data-type='member'><a href="sitemapsBackend.html#.exports.getItemsOfSitemap">exports.getItemsOfSitemap</a></li></ul></li><li><a href="sitemapsSecurity.html">sitemapsSecurity</a><ul class='members'><li data-type='member'><a href="sitemapsSecurity.html#.exports.sitemapAllowedForClient">exports.sitemapAllowedForClient</a></li><li data-type='member'><a href="sitemapsSecurity.html#.exports.ORG_SEPARATOR">exports.ORG_SEPARATOR</a></li></ul></li><li><a href="utils.html">utils</a><ul class='members'><li data-type='member'><a href="utils.html#.exports.findKeyInObj">exports.findKeyInObj</a></li><li data-type='member'><a href="utils.html#.exports.getHeaders">exports.getHeaders</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#ADMIN_OU">ADMIN_OU</a></li></ul>
 </nav>
 
 <div id="main">
@@ -48,7 +48,23 @@
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
 import { sendItemCommand, getItemState, getItem } from './backend.js';
-import logger from '../../logger.js';
+
+const itemAccess = () => {
+  return async function (req, res, next) {
+    const org = req.headers['x-openhab-org'] || '';
+    const user = req.headers['x-openhab-user'];
+    try {
+      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
+      if (allowed === true) {
+        next();
+      } else {
+        res.status(403).send();
+      }
+    } catch {
+      res.status(500).send();
+    }
+  };
+};
 
 /**
  * Provide required /items routes.
@@ -76,11 +92,8 @@ const items = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *       - in: header
    *         name: X-ORIGINAL-URI
    *         required: true
@@ -95,21 +108,20 @@ const items = (app) => {
    *         description: Forbidden
    */
   app.get('/auth/items', requireHeader('X-OPENHAB-USER'), requireHeader('X-ORIGINAL-URI'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
+    const org = req.headers['x-openhab-org'] || '';
     const user = req.headers['x-openhab-user'];
-    const itemname = req.headers['x-original-uri'].split('/')[3];
-
+    const regex = /\/items\/([a-zA-Z_0-9]+)/;
+    const itemname = regex.exec(req.headers['x-original-uri']);
+    if (itemname == null) return res.status(403).send();
     try {
-      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, itemname);
-      if (allowed) {
-        logger.info(`/auth/items: Access to Item ${itemname} allowed for ${user}/[${org}]`);
+      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, itemname[1]);
+      if (allowed === true) {
         res.status(200).send();
       } else {
         res.status(403).send();
       }
-    } catch (err) {
-      logger.error(err);
-      res.status(500).send('Internal server error.');
+    } catch {
+      res.status(500).send();
     }
   });
 
@@ -138,11 +150,8 @@ const items = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     responses:
    *       200:
    *         description: OK
@@ -153,21 +162,9 @@ const items = (app) => {
    *       404:
    *         description: Item not found
    */
-  app.get('/rest/items/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
-
-    try {
-      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
-      if (allowed) {
-        const response = await getItem(backendInfo.HOST, req, req.params.itemname);
-        res.status(response.status).send(response.json);
-      } else {
-        res.status(404).send();
-      }
-    } catch {
-      res.status(500).send('Internal server error.');
-    }
+  app.get('/rest/items/:itemname', requireHeader('X-OPENHAB-USER'), itemAccess(), async (req, res) => {
+    const response = await getItem(backendInfo.HOST, req, req.params.itemname);
+    res.status(response.status).send(response.json);
   });
 
   /**
@@ -195,11 +192,8 @@ const items = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     requestBody:
    *       description: valid item command (e.g. ON, OFF, UP, DOWN, REFRESH)
    *       required: true
@@ -215,21 +209,9 @@ const items = (app) => {
    *       404:
    *         description: Item not found
    */
-  app.post('/rest/items/:itemname', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
-
-    try {
-      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
-      if (allowed) {
-        const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
-        res.status(status).send();
-      } else {
-        res.status(404).send();
-      }
-    } catch {
-      res.status(500).send('Internal server error.');
-    }
+  app.post('/rest/items/:itemname', requireHeader('X-OPENHAB-USER'), itemAccess(), async (req, res) => {
+    const status = await sendItemCommand(backendInfo.HOST, req, req.params.itemname, req.body);
+    res.status(status).send();
   });
 
   /**
@@ -257,11 +239,8 @@ const items = (app) => {
    *         required: false
    *         description: Organisations the user is member of
    *         schema:
-   *           type: array
-   *           items:
-   *             type: string
+   *           type: string
    *         style: form
-   *         explode: true
    *     responses:
    *       200:
    *         description: OK
@@ -272,21 +251,9 @@ const items = (app) => {
    *       404:
    *         description: Item not found
    */
-  app.get('/rest/items/:itemname/state', requireHeader('X-OPENHAB-USER'), async (req, res) => {
-    const org = req.headers['x-openhab-org'] || [];
-    const user = req.headers['x-openhab-user'];
-
-    try {
-      const allowed = await itemAllowedForClient(backendInfo.HOST, req, user, org, req.params.itemname);
-      if (allowed) {
-        const response = await getItemState(backendInfo.HOST, req, req.params.itemname);
-        res.status(response.status).send(response.state);
-      } else {
-        res.status(404).send();
-      }
-    } catch {
-      res.status(500).send('Internal server error.');
-    }
+  app.get('/rest/items/:itemname/state', requireHeader('X-OPENHAB-USER'), itemAccess(), async (req, res) => {
+    const response = await getItemState(backendInfo.HOST, req, req.params.itemname);
+    res.status(response.status).send(response.state);
   });
 };
 
@@ -305,7 +272,7 @@ export default items;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Feb 28 2022 20:53:55 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Tue Mar 01 2022 14:49:50 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

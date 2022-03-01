@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>components/items/security.js - Documentation</title>
+    <title>server.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,7 +34,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">components/items/security.js</h1>
+    <h1 class="page-title">server.js</h1>
     
 
     
@@ -44,59 +44,86 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import logger from './../../logger.js';
-import { getAllSitemapsFiltered, getItemsOfSitemap } from '../sitemaps/backend.js';
+            <pre class="prettyprint source linenums"><code>import * as dotenv from 'dotenv';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import express from 'express';
+import pino from 'pino-http';
+import logger from './logger.js';
+import swagger from './components/swagger.js';
+import routes from './components/routes.js';
+import { replaceSpaceHyphenWithUnderscore, formatOrgs } from './components/middleware.js';
 
-/**
- * Items security namespace. Provides security checks for Item access.
- *
- * @namespace itemsSecurity
- */
+dotenv.config();
 
-/**
- * Get names of all Items allowed for a client.
- *
- * @memberof itemsSecurity
- * @private
- * @param {String} HOST hostname of openHAB server
- * @param {*} expressReq request object from expressjs
- * @param {String} user username
- * @param {String|Array&lt;String>} org organizations the client is member of
- * @returns {Array&lt;String>} names of Items allowed for client
- */
-const getItemsForUser = async function (HOST, expressReq, user, org) {
-  const sitemapList = await (await getAllSitemapsFiltered(HOST, expressReq, user, org)).map(sitemap => sitemap.name);
-  const items = [];
-  for (const i in sitemapList) {
-    items.push(...await getItemsOfSitemap(HOST, expressReq, sitemapList[i]));
-  }
-  logger.debug({ user: user, orgs: org }, `getItemsForUser(): Allowed Items: [${items}]`);
-  return items;
+// Argument parser
+const argv = yargs(hideBin(process.argv))
+  .option('port', {
+    alias: 'p',
+    describe: 'port for the api',
+    type: 'number'
+  })
+  .option('host', {
+    alias: 'o',
+    describe: 'openHAB hostname or IP-Address, e.g. http://10.10.10.2:8080',
+    type: 'string'
+  })
+  .demandCommand(0)
+  .parse();
+
+// Server variables.
+export const PORT = (argv.port !== undefined) ? argv.port : (process.env.PORT !== undefined) ? parseInt(process.env.PORT) : 8081;
+export const backendInfo = {
+  HOST: (argv.host !== undefined) ? argv.host : (process.env.HOST !== undefined) ? process.env.HOST : 'http://127.0.0.1:8080'
 };
+/**
+ * Administrator Organizational Unit. Defaults to admin
+ */
+export const ADMIN_OU = process.env.ADMIN_OU || 'admin';
+logger.debug(logger.debug(`Admin organization unit is ${ADMIN_OU}`));
 
 /**
- * Check whether Item access is allowed for client.
- * Must be used with await in async functions.
+ * Separates the organization name at beginning of Sitemap name from the full name.
  *
- * @memberof itemsSecurity
- * @param {String} HOST hostname of openHAB server
- * @param {*} expressReq request object from expressjs
- * @param {String} user username
- * @param {String|Array&lt;String>} org organizations the client is member of
- * @param {String} itemname name of Item
- * @returns {Boolean} whether Item access is allowed or not
+ * @memberof sitemapsSecurity
  */
-export const itemAllowedForClient = async function (HOST, expressReq, user, org, itemname) {
-  try {
-    const items = await getItemsForUser(HOST, expressReq, user, org);
-    const allowed = items.includes(itemname);
-    logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed} (typeof ${typeof allowed})`);
-    return allowed;
-  } catch (err) {
-    logger.error(err);
-    return false;
+export const ORG_SEPARATOR = process.env.ORG_SEPARATOR || '_org_';
+logger.debug(`Organization separator is ${ORG_SEPARATOR}`);
+const app = express();
+
+// Server setup.
+app.set('trust proxy', 'loopback');
+app.use(replaceSpaceHyphenWithUnderscore(['X-OPENHAB-USER', 'X-OPENHAB-ORG']));
+app.use(formatOrgs());
+app.disable('x-powered-by');
+app.disable('etag');
+app.use(express.json());
+app.use(express.text());
+app.use(pino({
+  logger: logger,
+  customLogLevel: function (res, err) {
+    if (res.statusCode >= 400 &amp;&amp; res.statusCode &lt; 500) { // Client error
+      return 'trace';
+    } else if (res.statusCode >= 500 || err) { // Server error
+      return 'error';
+    } else if (res.statusCode >= 300 &amp;&amp; res.statusCode &lt; 400) { // Redirections
+      return 'silent';
+    } else if (res.statusCode >= 200 &amp;&amp; res.statusCode &lt; 300) { // Success
+      return 'silent';
+    }
+    return 'info';
   }
-};
+})); // High-speed HTTP logger for Node.js
+
+// Use routes.
+swagger(app);
+routes(app);
+
+// Server activation.
+app.listen(PORT, () => {
+  logger.info(`Listening on port ${PORT}`);
+  logger.info(`openHAB host is ${backendInfo.HOST}`);
+});
 </code></pre>
         </article>
     </section>
