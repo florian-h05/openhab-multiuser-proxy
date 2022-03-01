@@ -1,5 +1,6 @@
 import logger from './../../logger.js';
 import { getAllSitemapsFiltered, getItemsOfSitemap } from '../sitemaps/backend.js';
+import { ADMIN_OU } from '../../server.js';
 
 /**
  * Items security namespace. Provides security checks for Item access.
@@ -41,6 +42,8 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
  * @returns {Boolean} whether Item access is allowed or not
  */
 export const itemAllowedForClient = async function (HOST, expressReq, user, org, itemname) {
+  if (typeof org === 'string') org = org.toString().split('.');
+  if (org.includes(ADMIN_OU)) return true;
   try {
     const items = await getItemsForUser(HOST, expressReq, user, org);
     const allowed = items.includes(itemname);

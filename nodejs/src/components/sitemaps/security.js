@@ -1,5 +1,5 @@
 import logger from './../../logger.js';
-import { ORG_SEPARATOR } from '../../server.js';
+import { ORG_SEPARATOR, ADMIN_OU } from '../../server.js';
 
 /**
  * Items security namespace. Provides security checks for Item access.
@@ -23,7 +23,7 @@ export const sitemapAllowedForClient = (user, org, sitemapname) => {
   const orgOfSitemap = (sitemapname.includes(ORG_SEPARATOR)) ? sitemapname.split(ORG_SEPARATOR)[0] : sitemapname;
   logger.debug(`sitemapAllowedForUser(): Organization of Sitemap ${sitemapname} is ${orgOfSitemap}`);
   let allowed;
-  if (sitemapname === user || org.includes(orgOfSitemap)) {
+  if (sitemapname === user || org.includes(orgOfSitemap) || org.includes(ADMIN_OU)) {
     allowed = true;
   } else {
     allowed = false;

@@ -12,6 +12,7 @@ It is utilising a NodeJS application and the popular [NGINX](https://www.nginx.c
 - [Access to Sitemaps](#access-to-sitemaps)
 - [Access to Items](#access-to-items)
 - [Access to MainUI pages](#access-to-mainui-pages)
+- [Admin user](#admin-user)
 - [NodeJS package](#nodejs-package)
   - [Installation](#installation)
   - [Configuration options](#configuration-options)
@@ -55,7 +56,12 @@ Only the following Item operations are allowed:
 ## Access to MainUI pages
 
 A client can access all MainUI pages whose name matches the rules for Sitemaps (refer to [Access to Sitemaps](#access-to-sitemaps)).
-The client has to directly request a page since general MainUI access is now allowed.
+
+## Admin user
+
+The admin user, identified by ``$ADMIN_OU`` in his OU, can access all Sitemaps, Pages & Items.
+
+Furthermore, administrators have unfiltered access to the openHAB server at ``https://admin.$servername``.
 
 ## NodeJS package
 
@@ -80,6 +86,7 @@ Option | Description | Command line argument | Environment variable | Example | 
 `PINO_LOG_LEVEL` | Log level, available: fatal, error, warn, info, debug, trace | none | PINO_LOG_LEVEL | PINO_LOG_LEVEL=info | ``info``
 `PINO_LOG_FILE` | Log file path. | none | PINO_LOG_FILE | PINO_LOG_FILE=./pino.log | none, outputs to console
 `ORG_SEPARATOR` | Separates organization name at beginning of Sitemap name from the rest. | none | ORG_SEPARATOR | ORG_SEPARATOR=_org_ | ``_org_``
+`ADMIN_OU` | Admin's organizational unit. | none | ADMIN_OU | ADMIN_OU=administrator | ``admin``
 
 These options can be set in the systemd file, either as param in ``ExecStart`` or as ``Environment`` variable.
 
