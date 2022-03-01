@@ -15,7 +15,7 @@ import { getAllSitemapsFiltered, getItemsOfSitemap } from '../sitemaps/backend.j
  * @param {String} HOST hostname of openHAB server
  * @param {*} expressReq request object from expressjs
  * @param {String} user username
- * @param {Array<String>} org array of organizations the user is member
+ * @param {String|Array<String>} org organizations the client is member of
  * @returns {Array<String>} names of Items allowed for client
  */
 const getItemsForUser = async function (HOST, expressReq, user, org) {
@@ -36,7 +36,7 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
  * @param {String} HOST hostname of openHAB server
  * @param {*} expressReq request object from expressjs
  * @param {String} user username
- * @param {Array<String>} org array of organizations the user is member
+ * @param {String|Array<String>} org organizations the client is member of
  * @param {String} itemname name of Item
  * @returns {Boolean} whether Item access is allowed or not
  */

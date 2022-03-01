@@ -52,7 +52,7 @@ export const getAllSitemaps = async function (HOST, expressReq) {
  * @param {String} HOST hostname of openHAB server
  * @param {*} expressReq request object from expressjs
  * @param {String} user username
- * @param {Array<String>} org array of organisations the user is member
+ * @param {String|Array<String>} org organizations the client is member of
  * @returns {Array<Object>} array of Sitemaps
  */
 export const getAllSitemapsFiltered = async function (HOST, expressReq, user, org) {

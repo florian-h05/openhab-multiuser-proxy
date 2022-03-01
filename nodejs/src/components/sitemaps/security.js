@@ -13,7 +13,7 @@ import { ORG_SEPARATOR } from '../../server.js';
  *
  * @memberof sitemapsSecurity
  * @param {String} user username
- * @param {String|Array<String>} org organizations the user is member
+ * @param {String|Array<String>} org organizations the client is member of
  * @param {String} sitemapname name of Sitemap
  * @returns {Boolean} whether Sitemap access is allowed or not
  */
