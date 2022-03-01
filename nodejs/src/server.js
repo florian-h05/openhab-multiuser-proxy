@@ -6,7 +6,7 @@ import pino from 'pino-http';
 import logger from './logger.js';
 import swagger from './components/swagger.js';
 import routes from './components/routes.js';
-import { replaceSpaceHyphenWithUnderscore } from './components/middleware.js';
+import { replaceSpaceHyphenWithUnderscore, formatOrgs } from './components/middleware.js';
 
 dotenv.config();
 
@@ -30,11 +30,25 @@ export const PORT = (argv.port !== undefined) ? argv.port : (process.env.PORT !=
 export const backendInfo = {
   HOST: (argv.host !== undefined) ? argv.host : (process.env.HOST !== undefined) ? process.env.HOST : 'http://127.0.0.1:8080'
 };
+/**
+ * Administrator Organizational Unit. Defaults to admin
+ */
+export const ADMIN_OU = process.env.ADMIN_OU || 'admin';
+logger.debug(logger.debug(`Admin organization unit is ${ADMIN_OU}`));
+
+/**
+ * Separates the organization name at beginning of Sitemap name from the full name.
+ *
+ * @memberof sitemapsSecurity
+ */
+export const ORG_SEPARATOR = process.env.ORG_SEPARATOR || '_org_';
+logger.debug(`Organization separator is ${ORG_SEPARATOR}`);
 const app = express();
 
 // Server setup.
 app.set('trust proxy', 'loopback');
 app.use(replaceSpaceHyphenWithUnderscore(['X-OPENHAB-USER', 'X-OPENHAB-ORG']));
+app.use(formatOrgs());
 app.disable('x-powered-by');
 app.disable('etag');
 app.use(express.json());
