@@ -56,7 +56,6 @@ Only the following Item operations are allowed:
 ## Access to MainUI pages
 
 A client can access all MainUI pages whose name matches the rules for Sitemaps (refer to [Access to Sitemaps](#access-to-sitemaps)).
-The client has to directly request a page since general MainUI access is now allowed.
 
 ## Admin user
 
