@@ -11,6 +11,7 @@ It is utilising a NodeJS application and the popular [NGINX](https://www.nginx.c
 - [Introduction](#introduction)
 - [Access to Sitemaps](#access-to-sitemaps)
 - [Access to Items](#access-to-items)
+- [Access to MainUI pages](#access-to-mainui-pages)
 - [NodeJS package](#nodejs-package)
   - [Installation](#installation)
   - [Configuration options](#configuration-options)
@@ -50,6 +51,11 @@ Only the following Item operations are allowed:
 - Get a single Item.
 - Get the state of an Item.
 - Send a command to an Item.
+
+## Access to MainUI pages
+
+A client can access all MainUI pages whose name matches the rules for Sitemaps (refer to [Access to Sitemaps](#access-to-sitemaps)).
+The client has to directly request a page since general MainUI access is now allowed.
 
 ## NodeJS package
 

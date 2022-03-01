@@ -15,7 +15,7 @@ import { getAllSitemapsFiltered, getItemsOfSitemap } from '../sitemaps/backend.j
  * @param {String} HOST hostname of openHAB server
  * @param {*} expressReq request object from expressjs
  * @param {String} user username
- * @param {Array<String>} org array of organizations the user is member
+ * @param {String|Array<String>} org organizations the client is member of
  * @returns {Array<String>} names of Items allowed for client
  */
 const getItemsForUser = async function (HOST, expressReq, user, org) {
@@ -30,18 +30,24 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
 
 /**
  * Check whether Item access is allowed for client.
+ * Must be used with await in async functions.
  *
  * @memberof itemsSecurity
  * @param {String} HOST hostname of openHAB server
  * @param {*} expressReq request object from expressjs
  * @param {String} user username
- * @param {Array<String>} org array of organizations the user is member
+ * @param {String|Array<String>} org organizations the client is member of
  * @param {String} itemname name of Item
  * @returns {Boolean} whether Item access is allowed or not
  */
 export const itemAllowedForClient = async function (HOST, expressReq, user, org, itemname) {
-  const items = await getItemsForUser(HOST, expressReq, user, org);
-  const allowed = items.includes(itemname);
-  logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed}`);
-  return allowed;
+  try {
+    const items = await getItemsForUser(HOST, expressReq, user, org);
+    const allowed = items.includes(itemname);
+    logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed} (typeof ${typeof allowed})`);
+    return allowed;
+  } catch (err) {
+    logger.error(err);
+    return false;
+  }
 };

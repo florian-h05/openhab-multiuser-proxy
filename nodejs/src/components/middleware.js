@@ -18,10 +18,6 @@ export const requireHeader = (header) => {
       res.status(400).send(`${header} is required!`);
       logger.warn(`${req.ip} did not sent the required header ${header}`);
       return;
-    } else {
-      for (const i in req.headers) {
-        req.headers[i] = req.headers[i].replace(/( )|(-)/g, '_');
-      }
     }
     next();
   };
@@ -37,6 +33,21 @@ export const replaceSpaceHyphenWithUnderscore = (headers) => {
   return function (req, res, next) {
     for (const i in headers) {
       if (req.headers[headers[i]]) req.headers[headers[i].toLowerCase()] = req.headers[headers[i].toLowerCase()].replace(/( )|(-)/g, '_');
+    }
+    next();
+  };
+};
+
+/**
+ * Formats header X-OPENHAB-ORG from String to Array<String>.
+ * Must not be applied before {@link middlewares.replaceSpaceHyphenWithUnderscore}!
+ *
+ * @memberof middlewares
+ */
+export const formatOrgs = () => {
+  return function (req, res, next) {
+    if (req.headers['x-openhab-org']) {
+      req.headers['x-openhab-org'] = req.headers['x-openhab-org'].split('.');
     }
     next();
   };

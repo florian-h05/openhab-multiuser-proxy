@@ -28,7 +28,7 @@ NGINX parses some information of the client certificates to get the user and org
 The user is parsed from the *Common Name* (abbrev. *CN*).
 
 Orgs are parsed from the *Organizational Unit* (abbrev. *OU*).
-Orgs have to be comma seperated.
+Orgs have to be point ``.`` seperated.
 
 Spaces and hyphens in those are replaced with underscores before a request to the openHAB server is made.
 It is recommended to **NOT USE spaces and hyphens** to avoid problems.
