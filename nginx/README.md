@@ -39,6 +39,8 @@ Expecting that openHAB is available on http://localhost:8080 and the NodeJS app 
 - [proxy-headers.conf](proxy-headers.conf) to ``/etc/nginx/``
 - [openhab-multiuser.conf](openhab-multiuser.conf) ``/etc/nginx/sites-enabled/``
 
+Setup your server_name in both **.config* files.
+
 Start NGINX:
 ```shell
 sudo nginx -t

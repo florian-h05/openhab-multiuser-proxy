@@ -6,6 +6,9 @@ It is utilising a NodeJS application and the popular [NGINX](https://www.nginx.c
 [![js-semistandard-style](https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg)](https://github.com/standard/semistandard)
 [![npm version](https://badge.fury.io/js/openhab-multiuser-proxy.svg)](https://badge.fury.io/js/openhab-multiuser-proxy)
 
+**DISCLAIMER:** I DO NOT GUARANTEE that this project has no vulnerabilities a attacker could use.
+As GPL-3.0 says, this project comes without any liability or warranty.
+
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
@@ -55,7 +58,14 @@ Only the following Item operations are allowed:
 
 ## Access to MainUI pages
 
+**DISCLAIMER:** This feature is type of experimental, you can deactivate it by removing all location blocks in the *# Additionally required for the MainUI* block of the nginx server configuration file.
+
 A client can access all MainUI pages whose name matches the rules for Sitemaps (refer to [Access to Sitemaps](#access-to-sitemaps)).
+
+**WARNING:** The authorization only works for direct page access via URLs. 
+As client can access all pages that are linked from the page he is allowed to access.
+
+Therefore DO NOT display any pages in MainUI root (root: a page called ``Overview`` and the sidebar).
 
 ## Admin user
 

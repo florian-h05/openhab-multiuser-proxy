@@ -2,7 +2,6 @@
 Description=openHAB multiuser proxy (NodeJS) together with NGINX
 Documentation=https://github.com/florian-h05/openhab-multiuser-proxy
 After=openhab.service
-PartOf=openhab.service
 
 [Service]
 # Available: fatal, error, warn, info, debug, trace
