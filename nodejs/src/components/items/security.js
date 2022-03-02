@@ -43,11 +43,15 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
  */
 export const itemAllowedForClient = async function (HOST, expressReq, user, org, itemname) {
   if (typeof org === 'string') org = org.toString().split('.');
-  if (org.includes(ADMIN_OU)) return true;
+  if (org.includes(ADMIN_OU)) {
+    const allowed = true;
+    logger.info({ user: user, orgs: org }, `itemAllowedForClient(): Item ${itemname} allowed: ${allowed} (typeof ${typeof allowed})`);
+    return allowed;
+  }
   try {
     const items = await getItemsForUser(HOST, expressReq, user, org);
     const allowed = items.includes(itemname);
-    logger.info({ user: user, orgs: org }, `itemAllowedForUser(): Item ${itemname} allowed: ${allowed} (typeof ${typeof allowed})`);
+    logger.info({ user: user, orgs: org }, `itemAllowedForClient(): Item ${itemname} allowed: ${allowed} (typeof ${typeof allowed})`);
     return allowed;
   } catch (err) {
     logger.error(err);
