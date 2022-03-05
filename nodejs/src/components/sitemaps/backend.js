@@ -84,11 +84,11 @@ export const getAllSitemapsFiltered = async function (HOST, expressReq, user, or
 export const getSitemap = async function (HOST, expressReq, sitemapname) {
   const headers = await getHeaders(expressReq);
   try {
-    const json = await (await fetch(HOST + '/rest/sitemaps/' + sitemapname, { headers: headers })).json();
-    logger.debug(`getSitemap(): Successfully requested backend ${HOST + '/rest/sitemaps/' + sitemapname}`);
+    const json = await (await fetch(HOST + '/rest/sitemaps/' + sitemapname + '?jsoncallback=callback&includeHidden=true', { headers: headers })).json();
+    logger.debug(`getSitemap(): Successfully requested backend ${HOST + '/rest/sitemaps/' + sitemapname + '?jsoncallback=callback&includeHidden=true'}`);
     return await json;
   } catch (err) {
-    const error = new Error(`getSitemap(): An error occurred when requesting backend ${HOST + '/rest/sitemaps/' + sitemapname}: ${err}`);
+    const error = new Error(`getSitemap(): An error occurred when requesting backend ${HOST + '/rest/sitemaps/' + sitemapname + '?jsoncallback=callback&includeHidden=true'}: ${err}`);
     logger.error(error);
     error();
   }
