@@ -31,10 +31,15 @@ export const backendInfo = {
   HOST: (argv.host !== undefined) ? argv.host : (process.env.HOST !== undefined) ? process.env.HOST : 'http://127.0.0.1:8080'
 };
 /**
- * Administrator Organizational Unit. Defaults to admin
+ * Administrator Organizational Unit.
+ * Defaults to admin
  */
 export const ADMIN_OU = process.env.ADMIN_OU || 'admin';
-logger.debug(logger.debug(`Admin organization unit is ${ADMIN_OU}`));
+/**
+ * Time to cache in milliseconds.
+ * Defaults to 300000 ms = 5 min.
+ */
+export const CACHE_TIME = process.env.CACHE_TIME || 300000;
 
 /**
  * Separates the organization name at beginning of Sitemap name from the full name.

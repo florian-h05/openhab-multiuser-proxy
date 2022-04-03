@@ -1,6 +1,8 @@
 import logger from './../../logger.js';
 import fetch from 'node-fetch';
 import { getHeaders } from '../../utils.js';
+import { itemsListDb } from '../../db.js';
+import { CACHE_TIME } from '../../server.js';
 
 /**
  * Items backend namespace. Providing access to the openHAB backend.
@@ -80,6 +82,41 @@ export const getItem = async function (HOST, expressReq, itemname) {
     };
   } catch (err) {
     const error = new Error(`getItem(): An error occurred while getting Item from ${HOST + '/rest/items/' + itemname}: ${err}`);
+    logger.error(error);
+    error();
+  }
+};
+
+/**
+ * Gets all Items.
+ *
+ * @memberof itemsBackend
+ * @param {String} HOST hostname of openHAB server
+ * @param {*} expressReq request object from expressjs
+ * @returns {Object} Object: { json: JSON reponse, status: HTTP status code }
+ */
+export const getAllItems = async function (HOST, expressReq) {
+  const now = Date.now();
+  const itemsList = itemsListDb.findOne({ name: 'list' });
+  if (itemsList) {
+    if (now < itemsList.lastupdate + CACHE_TIME) {
+      // Currently stored version not older than CACHE_TIME.
+      logger.debug('getAllItems(): Found in database and not older than 2 min.');
+      return itemsList.json;
+    }
+    itemsListDb.findAndRemove({ name: 'list' });
+  }
+
+  const headers = await getHeaders(expressReq);
+  try {
+    const response = await fetch(HOST + '/rest/items', { headers: headers });
+    const json = await response.json();
+    itemsListDb.insert({ name: 'list', lastupdate: now, json: json });
+    const status = response.status;
+    logger.debug(`getAllItems(): Successfully requested backend ${HOST + '/rest/items'}, HTTP response code ${status}`);
+    return json;
+  } catch (err) {
+    const error = new Error(`getAllItems(): An error occurred while getting all Items from ${HOST + '/rest/items'}: ${err}`);
     logger.error(error);
     error();
   }

@@ -1,7 +1,7 @@
 import { itemAllowedForClient } from './security.js';
 import { requireHeader } from './../middleware.js';
 import { backendInfo } from '../../server.js';
-import { sendItemCommand, getItemState, getItem } from './backend.js';
+import { sendItemCommand, getItemState, getItem, getAllItems } from './backend.js';
 
 const itemAccess = () => {
   return async function (req, res, next) {
@@ -75,6 +75,50 @@ const items = (app) => {
         res.status(403).send();
       }
     } catch {
+      res.status(500).send();
+    }
+  });
+
+  /**
+   * @swagger
+   * /rest/items:
+   *   get:
+   *     summary: Get all available Items.
+   *     parameters:
+   *       - in: header
+   *         name: X-OPENHAB-USER
+   *         required: true
+   *         description: Name of user
+   *         schema:
+   *           type: string
+   *         style: form
+   *       - in: header
+   *         name: X-OPENHAB-ORG
+   *         required: false
+   *         description: Organisations the user is member of
+   *         schema:
+   *           type: string
+   *         style: form
+   *     responses:
+   *       200:
+   *         description: OK
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   */
+  app.get('/rest/items', requireHeader('X-OPENHAB-USER'), async (req, res) => {
+    const org = req.headers['x-openhab-org'] || '';
+    const user = req.headers['x-openhab-user'];
+    try {
+      const allItems = await getAllItems(backendInfo.HOST, req);
+      const filteredItems = [];
+      for (const i in allItems) {
+        if (await itemAllowedForClient(backendInfo.HOST, req, user, org, allItems[i].name) === true) filteredItems.push(allItems[i]);
+      }
+      res.status(200).send(filteredItems);
+    } catch (e) {
+      console.info(e);
       res.status(500).send();
     }
   });

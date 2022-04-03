@@ -44,9 +44,8 @@ const getItemsForUser = async function (HOST, expressReq, user, org) {
 export const itemAllowedForClient = async function (HOST, expressReq, user, org, itemname) {
   if (typeof org === 'string') org = org.toString().split('.');
   if (org.includes(ADMIN_OU)) {
-    const allowed = true;
-    logger.info({ user: user, orgs: org }, `itemAllowedForClient(): Item ${itemname} allowed: ${allowed} (typeof ${typeof allowed})`);
-    return allowed;
+    logger.info({ user: user, orgs: org }, `itemAllowedForClient(): Item ${itemname} allowed: true due to admin privileges`);
+    return true;
   }
   try {
     const items = await getItemsForUser(HOST, expressReq, user, org);

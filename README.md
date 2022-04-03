@@ -97,6 +97,7 @@ Option | Description | Command line argument | Environment variable | Example | 
 `PINO_LOG_FILE` | Log file path. | none | PINO_LOG_FILE | PINO_LOG_FILE=./pino.log | none, outputs to console
 `ORG_SEPARATOR` | Separates organization name at beginning of Sitemap name from the rest. | none | ORG_SEPARATOR | ORG_SEPARATOR=_org_ | ``_org_``
 `ADMIN_OU` | Admin's organizational unit. | none | ADMIN_OU | ADMIN_OU=administrator | ``admin``
+`CACHE_TIME` | Time (in milliseconds) for caching some data. | none | CACHE_TIME | CACHE_TIME | ``300000`` = 5 min
 
 These options can be set in the systemd file, either as param in ``ExecStart`` or as ``Environment`` variable.
 

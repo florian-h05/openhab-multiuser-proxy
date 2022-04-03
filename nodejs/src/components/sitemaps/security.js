@@ -21,7 +21,7 @@ export const sitemapAllowedForClient = (user, org, sitemapname) => {
   if (typeof org === 'string') org = org.toString().split('.');
   // If Sitemap name includes ORG_SEPARATOR, return string before ORG_SEPARATOR, else return Sitemap name.
   const orgOfSitemap = (sitemapname.includes(ORG_SEPARATOR)) ? sitemapname.split(ORG_SEPARATOR)[0] : sitemapname;
-  logger.debug(`sitemapAllowedForClient(): Organization of Sitemap ${sitemapname} is ${orgOfSitemap}`);
+  logger.trace(`sitemapAllowedForClient(): Organization of Sitemap ${sitemapname} is ${orgOfSitemap}`);
   let allowed;
   if (sitemapname === user || org.includes(orgOfSitemap) || org.includes(ADMIN_OU)) {
     allowed = true;

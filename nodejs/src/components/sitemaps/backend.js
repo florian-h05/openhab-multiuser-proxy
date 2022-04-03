@@ -1,8 +1,9 @@
 import logger from './../../logger.js';
 import fetch from 'node-fetch';
 import { getHeaders, findKeyInObj } from '../../utils.js';
-import { sitemapsDb, sitemapListDb } from '../../db.js';
+import { itemsOfSitemapDb, sitemapListDb } from '../../db.js';
 import { sitemapAllowedForClient } from './security.js';
+import { CACHE_TIME } from '../../server.js';
 
 /**
  * Sitemaps backend namespace. Providing access to the openHAB backend.
@@ -24,8 +25,8 @@ export const getAllSitemaps = async function (HOST, expressReq) {
   const now = Date.now();
   const sitemapsList = sitemapListDb.findOne({ name: 'list' });
   if (sitemapsList) {
-    if (now < sitemapsList.lastupdate + 120000) {
-      // Currently stored version not older than 2 min.
+    if (now < sitemapsList.lastupdate + CACHE_TIME) {
+      // Currently stored version not older than CACHE_TIME.
       logger.debug('getAllSitemaps(): Found in database and not older than 2 min.');
       return sitemapsList.json;
     }
@@ -37,7 +38,7 @@ export const getAllSitemaps = async function (HOST, expressReq) {
     const json = await (await fetch(HOST + '/rest/sitemaps', { headers: headers })).json();
     sitemapListDb.insert({ name: 'list', lastupdate: now, json: json });
     logger.debug(`getAllSitemaps(): Successfully requested backend ${HOST + '/rest/sitemaps'}`);
-    return await json;
+    return json;
   } catch (err) {
     const error = new Error(`getAllSitemaps(): An error occurred while requesting backend ${HOST + '/rest/sitemaps'}: ${err}`);
     logger.error(error);
@@ -106,20 +107,20 @@ export const getSitemap = async function (HOST, expressReq, sitemapname) {
  */
 export const getItemsOfSitemap = async function (HOST, expressReq, sitemapname) {
   const now = Date.now();
-  const itemsDb = sitemapsDb.findOne({ name: sitemapname });
+  const itemsDb = itemsOfSitemapDb.findOne({ name: sitemapname });
   if (itemsDb) {
-    if (now < itemsDb.lastupdate + 120000) {
-      // Currently stored version not older than 2 min.
+    if (now < itemsDb.lastupdate + CACHE_TIME) {
+      // Currently stored version not older than CACHE_TIME.
       logger.debug(`getItemsOfSitemap(): Items of Sitemap ${sitemapname} found in database and not older than 2 min.`);
       return itemsDb.items;
     }
-    sitemapsDb.findAndRemove({ name: sitemapname });
+    itemsOfSitemapDb.findAndRemove({ name: sitemapname });
   }
 
   try {
     const sitemap = await getSitemap(HOST, expressReq, sitemapname);
     const items = findKeyInObj(sitemap.homepage.widgets, 'item').map(item => item.name);
-    sitemapsDb.insert({ name: sitemapname, lastupdate: now, items: items });
+    itemsOfSitemapDb.insert({ name: sitemapname, lastupdate: now, items: items });
     logger.debug({ sitemap: sitemapname }, `getItemOfSitemap(): Items of Sitemap ${sitemapname} fetched from backend`);
     return items;
   } catch (err) {
