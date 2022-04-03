@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>itemsBackend - Documentation</title>
+    <title>db.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,361 +34,54 @@
 
 <div id="main">
     
-    <h1 class="page-title">itemsBackend</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        itemsBackend
-        </h2>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="components_items_backend.js.html">components/items/backend.js</a>, <a href="components_items_backend.js.html#line7">line 7</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-            
-                <div class="description usertext"><p>Items backend namespace. Providing access to the openHAB backend.</p></div>
-            
-
-            
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id=".exports.sendItemCommand"><span class="type-signature">(static, constant) </span>exports.sendItemCommand<span class="type-signature"></span></h4>
-
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="components_items_backend.js.html">components/items/backend.js</a>, <a href="components_items_backend.js.html#line23">line 23</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Sends a command to an Item.</p>
-</div>
-
-
-
-
-
-
-
-
-        
-            
-<h4 class="name" id=".exports.getItemState"><span class="type-signature">(static, constant) </span>exports.getItemState<span class="type-signature"></span></h4>
-
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="components_items_backend.js.html">components/items/backend.js</a>, <a href="components_items_backend.js.html#line45">line 45</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Gets the state of an Item.</p>
-</div>
-
-
-
-
-
-
-
-
-        
-            
-<h4 class="name" id=".exports.getItem"><span class="type-signature">(static, constant) </span>exports.getItem<span class="type-signature"></span></h4>
-
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="components_items_backend.js.html">components/items/backend.js</a>, <a href="components_items_backend.js.html#line72">line 72</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Gets a single Item.</p>
-</div>
-
-
-
-
-
-
-
-
-        
-            
-<h4 class="name" id=".exports.getAllItems"><span class="type-signature">(static, constant) </span>exports.getAllItems<span class="type-signature"></span></h4>
-
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="components_items_backend.js.html">components/items/backend.js</a>, <a href="components_items_backend.js.html#line98">line 98</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Gets all Items.</p>
-</div>
-
-
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">db.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import Loki from 'lokijs';
+
+const db = new Loki('lokijs.db');
+/**
+ * LokiJS database that holds the Items of a Sitemap.
+ */
+export const itemsOfSitemapDb = db.addCollection('sitemaps', {
+  exact: ['name', 'lastupdate', 'items'],
+  indices: ['name'],
+  autoload: false,
+  autosave: false,
+  autosaveInterval: 10000
+});
+/**
+ * LokiJS database that holds the list of Sitemaps.
+ * Fetched from: /rest/sitemaps
+ */
+export const sitemapListDb = db.addCollection('sitemapsList', {
+  exact: ['name', 'lastupdate', 'json'],
+  indices: ['name'],
+  autoload: false,
+  autosave: false,
+  autosaveInterval: 10000
+});
+/**
+ * LokiJS database that holds all Items.
+ * Fetched from: /rest/items
+ */
+export const itemsListDb = db.addCollection('itemsList', {
+  exact: ['name', 'lastupdate', 'json'],
+  indices: ['name'],
+  autoload: false,
+  autosave: false,
+  autosaveInterval: 10000
+});
+</code></pre>
+        </article>
+    </section>
 
 
 
