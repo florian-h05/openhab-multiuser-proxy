@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>components/sitemaps/security.js - Documentation</title>
+    <title>lokijs - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,52 +34,300 @@
 
 <div id="main">
     
-    <h1 class="page-title">components/sitemaps/security.js</h1>
+    <h1 class="page-title">lokijs</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import logger from './../../logger.js';
-import { ORG_SEPARATOR, ADMIN_OU } from '../../server.js';
+        <h2>
+        lokijs
+        </h2>
+        
+    
+</header>
 
-/**
- * Items security namespace. Provides security checks for Item access.
- *
- * @namespace sitemapsSecurity
- */
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-/**
- * Check whether Sitemap access is allowed for client.
- * Must be used with await in async functions.
- *
- * @memberof sitemapsSecurity
- * @param {String} user username
- * @param {String|Array&lt;String>} org organizations the client is member of
- * @param {String} sitemapname name of Sitemap
- * @returns {Boolean} whether Sitemap access is allowed or not
- */
-export const sitemapAllowedForClient = (user, org, sitemapname) => {
-  if (typeof org === 'string') org = org.toString().split('.');
-  // If Sitemap name includes ORG_SEPARATOR, return string before ORG_SEPARATOR, else return Sitemap name.
-  const orgOfSitemap = (sitemapname.includes(ORG_SEPARATOR)) ? sitemapname.split(ORG_SEPARATOR)[0] : sitemapname;
-  logger.trace(`sitemapAllowedForClient(): Organization of Sitemap ${sitemapname} is ${orgOfSitemap}`);
-  let allowed;
-  if (sitemapname === user || org.includes(orgOfSitemap) || org.includes(ADMIN_OU)) {
-    allowed = true;
-  } else {
-    allowed = false;
-  }
-  logger.info({ user: user, orgs: org }, `sitemapAllowedForClient(): Access to Sitemap/Page ${sitemapname} allowed: ${allowed} (typeof ${typeof allowed})`);
-  return allowed;
-};
-</code></pre>
-        </article>
-    </section>
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="db.js.html">db.js</a>, <a href="db.js.html#line3">line 3</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+            
+                <div class="description usertext"><p>LokiJS databases.</p></div>
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".exports.itemsOfSitemapDb"><span class="type-signature">(static, constant) </span>exports.itemsOfSitemapDb<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="db.js.html">db.js</a>, <a href="db.js.html#line15">line 15</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>LokiJS database that holds the Items of a Sitemap.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".exports.sitemapListDb"><span class="type-signature">(static, constant) </span>exports.sitemapListDb<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="db.js.html">db.js</a>, <a href="db.js.html#line28">line 28</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>LokiJS database that holds the list of Sitemaps.
+Fetched from: /rest/sitemaps</p>
+</div>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".exports.itemsListDb"><span class="type-signature">(static, constant) </span>exports.itemsListDb<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="db.js.html">db.js</a>, <a href="db.js.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>LokiJS database that holds all Items.
+Fetched from: /rest/items</p>
+</div>
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
